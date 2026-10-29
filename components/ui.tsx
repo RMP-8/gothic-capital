@@ -59,7 +59,7 @@ export function Segmented<T extends string>({
   size = "sm",
 }: {
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; spot?: string }[];
   onChange: (v: T) => void;
   size?: "sm" | "md";
 }) {
@@ -69,6 +69,7 @@ export function Segmented<T extends string>({
         <button
           key={o.value}
           type="button"
+          data-spot={o.spot}
           onClick={() => onChange(o.value)}
           className={`rounded px-2 ${size === "sm" ? "py-0.5 text-[12px]" : "py-1 text-[13px]"} font-medium transition-colors ${
             value === o.value ? "bg-royal text-white" : "text-silver/80 hover:text-white"

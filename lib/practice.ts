@@ -7,7 +7,7 @@ import { money, num, pct } from "./format";
 export type ActionKind = "buyShares" | "sellShares" | "nextWeek" | "skip" | "buyCall" | "buyPut" | "sellOption" | "preview" | "autoplay";
 
 /** Areas of the desk the coach can spotlight. */
-export type Spot = "chart" | "ticket" | "inbox" | "strip" | "next" | "skip" | null;
+export type Spot = "chart" | "ticket" | "inbox" | "strip" | "next" | "skip" | "buy" | "sell" | "call" | "put" | "preview" | "positions" | null;
 
 export interface StepCtx {
   g: GameState;
@@ -76,14 +76,14 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "buy-shares",
-    spot: "ticket",
+    spot: "buy",
     action: "buyShares",
     text: () => `Let's buy some shares. Type ${PRACTICE_SHARES} in the Shares box on the right monitor and press Buy.`,
     nudge: `Not yet. First buy ${PRACTICE_SHARES} shares: type ${PRACTICE_SHARES} in the Shares box and press Buy.`,
   },
   {
     id: "bought",
-    spot: "ticket",
+    spot: "positions",
     text: (c) => {
       const n = c.g.shares;
       return `You now own ${n} share${n === 1 ? "" : "s"} of ${c.g.ticker} worth ${money(n * spot(c.g))}, paid for from your cash. From here on, their value moves with the price.`;
@@ -110,7 +110,7 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "sell-shares",
-    spot: "ticket",
+    spot: "sell",
     action: "sellShares",
     text: () => `Now sell ${PRACTICE_SELL} of your shares: type ${PRACTICE_SELL} in the Shares box and press Sell.`,
     nudge: `Let's sell first. Type ${PRACTICE_SELL} in the Shares box on the right monitor and press Sell.`,
@@ -122,7 +122,7 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "buy-call",
-    spot: "ticket",
+    spot: "call",
     action: "buyCall",
     also: ["preview"],
     text: () => "Now a call option. Click the Call tab, keep 4 weeks and At price, press Preview call & buy, read the preview, then confirm.",
@@ -130,7 +130,7 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "call-explained",
-    spot: "ticket",
+    spot: "positions",
     text: (c) => {
       const o = c.g.options.find((x) => x.type === "call");
       if (!o) return "You own a call. It makes money if the price rises above the strike plus the fee you paid.";
@@ -140,7 +140,7 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "buy-put",
-    spot: "ticket",
+    spot: "put",
     action: "buyPut",
     also: ["preview"],
     text: () => "Same again with a put: click the Put tab, keep 4 weeks and At price, preview it and confirm.",
@@ -148,7 +148,7 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   },
   {
     id: "put-explained",
-    spot: "ticket",
+    spot: "positions",
     text: (c) => {
       const o = c.g.options.find((x) => x.type === "put");
       if (!o) return "A put is a bet that the price falls. It also works as insurance on shares you own.";

@@ -8,7 +8,7 @@ import { computeStats } from "@/lib/metrics";
 import { playChime, playClick, playFanfare } from "@/lib/sound";
 import { PRACTICE_STEPS, practiceData, type ActionKind, type Spot } from "@/lib/practice";
 import { nextTip } from "@/lib/tips";
-import { KEYBOARD, MONITOR, STRIP, monitorRect, type Rect } from "@/lib/layout";
+import { MONITOR } from "@/lib/layout";
 import Stage from "@/components/Stage";
 import OfficeScene, { MOODS, type PlantMood, type TimeOfDay } from "@/components/office/OfficeScene";
 import MonitorFrame from "@/components/office/MonitorFrame";
@@ -24,7 +24,6 @@ import StartScreen from "@/components/StartScreen";
 import ReviewScreen from "@/components/ReviewScreen";
 import ChoiceModal from "@/components/ChoiceModal";
 import PracticeCoach from "@/components/PracticeCoach";
-import Spotlight from "@/components/Spotlight";
 import HelpPanel, { HelpButton } from "@/components/HelpPanel";
 
 type Phase = "start" | "practice" | "playing" | "review";
@@ -36,24 +35,6 @@ type Modal =
   | null;
 
 const TIMES: TimeOfDay[] = ["morning", "midday", "afternoon"];
-
-function spotRect(spot: Spot): Rect | null {
-  switch (spot) {
-    case "chart":
-      return monitorRect(MONITOR.main);
-    case "ticket":
-      return monitorRect(MONITOR.ticket);
-    case "inbox":
-      return monitorRect(MONITOR.inbox);
-    case "strip":
-      return STRIP;
-    case "next":
-    case "skip":
-      return KEYBOARD;
-    default:
-      return null;
-  }
-}
 
 export default function Game() {
   const [phase, setPhase] = useState<Phase>("start");
@@ -75,6 +56,7 @@ export default function Game() {
   const [stepIdx, setStepIdx] = useState(0);
   const [before, setBefore] = useState<GameState | null>(null);
   const [nudge, setNudge] = useState<string | null>(null);
+  const [ticketTab, setTicketTab] = useState<"shares" | "call" | "put">("shares");
 
   // Refs let event handlers and the auto-play timer see the latest state without re-subscribing.
   const gameRef = useRef<GameState | null>(null);
@@ -102,6 +84,7 @@ export default function Game() {
       setModal(null);
       setHelpOpen(false);
       setSession((n) => n + 1);
+      setTicketTab("shares");
       refillCoffee();
     },
     [refillCoffee],
@@ -261,6 +244,10 @@ export default function Game() {
   }
   const practicing = phase === "practice" && !!game;
   const coachStep = PRACTICE_STEPS[Math.min(stepIdx, PRACTICE_STEPS.length - 1)];
+  // Once the right tab is open, point at the preview button instead of the tab.
+  let coachSpot: Spot = coachStep.spot;
+  if (coachStep.id === "buy-call" && ticketTab === "call") coachSpot = "preview";
+  if (coachStep.id === "buy-put" && ticketTab === "put") coachSpot = "preview";
   const tip = nextTip(phase, game);
 
   const helpUi = (
@@ -295,14 +282,15 @@ export default function Game() {
       <OfficeScene timeOfDay={timeOfDay} plantMood={plantMood} coffeeLevel={coffee} title={game?.title ?? "Junior PM"} />
       {game && (phase === "playing" || phase === "practice") && (
         <>
-          <MonitorFrame {...MONITOR.inbox} shadow={shadow}>
+          <MonitorFrame {...MONITOR.inbox} shadow={shadow} spot="inbox">
             <InboxMonitor messages={game.messages} />
           </MonitorFrame>
-          <MonitorFrame {...MONITOR.ticket} shadow={shadow}>
+          <MonitorFrame {...MONITOR.ticket} shadow={shadow} spot="ticket">
             <SideMonitor
               key={session}
               state={game}
               error={error}
+              onTabChange={setTicketTab}
               onBuyShares={(n) => apply((g) => buyShares(g, n), "buyShares", true)}
               onSellShares={(n) => apply((g) => sellShares(g, n), "sellShares", true)}
               onSellOption={(id) => apply((g) => sellOption(g, id), "sellOption", true)}
@@ -324,14 +312,13 @@ export default function Game() {
               }}
             />
           </MonitorFrame>
-          <MonitorFrame {...MONITOR.main} shadow={shadow}>
+          <MonitorFrame {...MONITOR.main} shadow={shadow} spot="chart">
             <MainMonitor state={game} />
           </MonitorFrame>
           <Controls
             playing={playing && !modal}
             finished={game.status === "finished"}
             practice={practicing}
-            highlight={practicing && (coachStep.spot === "next" || coachStep.spot === "skip") ? coachStep.spot : null}
             autoplay={autoplay}
             speed={speed}
             sound={sound}
@@ -352,8 +339,8 @@ export default function Game() {
 
       {practicing && (
         <>
-          <Spotlight rect={modal ? null : spotRect(coachStep.spot)} />
           <PracticeCoach
+            spot={coachSpot}
             step={coachStep}
             index={stepIdx}
             text={coachStep.text({ g: game, before })}

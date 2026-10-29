@@ -9,8 +9,6 @@ export interface ControlsProps {
   finished: boolean;
   /** Practice round: no auto-play */
   practice?: boolean;
-  /** Pulse a ring around one key for the practice coach */
-  highlight?: "next" | "skip" | null;
   autoplay: boolean;
   speed: Speed;
   sound: boolean;
@@ -56,15 +54,10 @@ export default function Controls(p: ControlsProps) {
           </>
         ) : (
           <>
-            <Button className={`px-3 py-1.5 text-[13px] whitespace-nowrap ${p.highlight === "next" ? "ring-2 ring-white animate-pulse" : ""}`} disabled={!p.playing} onClick={p.onNext}>
+            <Button data-spot="next" className="px-3 py-1.5 text-[13px] whitespace-nowrap" disabled={!p.playing} onClick={p.onNext}>
               Next week →
             </Button>
-            <Button
-              variant="ghost"
-              className={`px-2.5 py-1.5 text-[12px] whitespace-nowrap ${p.highlight === "skip" ? "ring-2 ring-white animate-pulse" : ""}`}
-              disabled={!p.playing}
-              onClick={p.onSkip}
-            >
+            <Button data-spot="skip" variant="ghost" className="px-2.5 py-1.5 text-[12px] whitespace-nowrap" disabled={!p.playing} onClick={p.onSkip}>
               Skip 4 weeks
             </Button>
             <div className="mx-0.5 h-5 w-px bg-white/10" />

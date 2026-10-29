@@ -9,6 +9,7 @@ export default function MonitorFrame({
   w,
   h,
   shadow,
+  spot,
   children,
 }: {
   x: number;
@@ -16,6 +17,8 @@ export default function MonitorFrame({
   w: number;
   h: number;
   shadow: { dx: number; dy: number; blur: number; opacity: number };
+  /** id for the practice coach to point at */
+  spot?: string;
   children: ReactNode;
 }) {
   const bezel = 6;
@@ -38,7 +41,7 @@ export default function MonitorFrame({
       <div className="absolute left-1/2 -translate-x-1/2" style={{ top: h + bezel * 2 + chin - 1, width: 46, height: neck + 2, background: "linear-gradient(90deg, #1f2328, #3a3f46 50%, #1f2328)" }} />
       <div className="absolute left-1/2 -translate-x-1/2 rounded-[3px]" style={{ top: h + bezel * 2 + chin + neck, width: w * 0.34, height: 10, background: "linear-gradient(#3a3f46, #1f2328)" }} />
       {/* bezel */}
-      <div className="absolute inset-x-0 top-0 rounded-[6px] bg-[#111418]" style={{ height: h + bezel * 2 + chin, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} />
+      <div data-spot={spot} className="absolute inset-x-0 top-0 rounded-[6px] bg-[#111418]" style={{ height: h + bezel * 2 + chin, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} />
       {/* screen */}
       <div className="absolute overflow-hidden rounded-[3px] bg-navy-deep" style={{ left: bezel, top: bezel, width: w, height: h }}>
         {children}

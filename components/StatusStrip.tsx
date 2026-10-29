@@ -17,6 +17,7 @@ export default function StatusStrip({ state }: { state: GameState }) {
   const change = weekChange(state);
   return (
     <div
+      data-spot="strip"
       className="absolute flex items-center justify-between rounded-[6px] border border-white/10 px-6 text-white"
       style={{ left: 40, top: 866, width: 1520, height: 30, background: "linear-gradient(180deg, #0a1b47, #061231)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.3)" }}
     >

@@ -1,14 +1,20 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PracticeStep } from "@/lib/practice";
+import { FloatingArrow, arrow, autoPlacement, autoUpdate, offset, shift, useFloating } from "@floating-ui/react";
+import type { PracticeStep, Spot } from "@/lib/practice";
 import { PRACTICE_TOTAL } from "@/lib/practice";
 import type { PerformanceStats } from "@/lib/metrics";
+import type { Rect } from "@/lib/layout";
+import { STAGE_H, STAGE_W } from "@/components/Stage";
 import { FOUNDER_NAME } from "@/lib/messages";
 import { num, pct, pctPlain } from "@/lib/format";
 import { Button, FounderAvatar } from "@/components/ui";
 
 export interface CoachProps {
+  /** What the box points at. Null centers the box with no arrow. */
+  spot: Spot;
   step: PracticeStep;
   index: number;
   text: string;
@@ -18,16 +24,100 @@ export interface CoachProps {
   onSkip: () => void;
 }
 
-export default function PracticeCoach({ step, index, text, nudge, scoreboard, onContinue, onSkip }: CoachProps) {
+const BOX_W = 560;
+const ROYAL = "#00539B";
+
+/** Rect of an element in stage coordinates (the stage is CSS-scaled to fit the window). */
+function stageRectOf(el: Element): Rect | null {
+  const stage = document.querySelector("[data-stage]");
+  if (!stage) return null;
+  const s = stage.getBoundingClientRect();
+  const scale = s.width / STAGE_W;
+  const r = el.getBoundingClientRect();
+  return { x: (r.left - s.left) / scale, y: (r.top - s.top) / scale, w: r.width / scale, h: r.height / scale };
+}
+
+export default function PracticeCoach({ spot, step, index, text, nudge, scoreboard, onContinue, onSkip }: CoachProps) {
+  const [arrowEl, setArrowEl] = useState<SVGSVGElement | null>(null);
+  const [target, setTarget] = useState<Rect | null>(null);
+  const [boxH, setBoxH] = useState(160);
+
+  const measure = useCallback((reference: Element | null) => {
+    setTarget(reference ? stageRectOf(reference) : null);
+  }, []);
+
+  const { refs, x, y, context, elements, isPositioned } = useFloating({
+    strategy: "absolute",
+    placement: "top",
+    transform: false,
+    middleware: [offset(18), autoPlacement({ padding: 24 }), shift({ padding: 20 }), arrow({ element: arrowEl, padding: 14 })],
+    whileElementsMounted: (reference, floating, update) =>
+      autoUpdate(reference, floating, () => {
+        update();
+        measure(reference instanceof Element ? reference : null);
+      }),
+  });
+
+  // Point at the element tagged with the current spot. Re-run when the step changes or the DOM may have changed.
+  useEffect(() => {
+    const el = spot ? document.querySelector(`[data-spot="${spot}"]`) : null;
+    refs.setReference(el);
+  }, [spot, index, refs]);
+
+  // Keep the centered layout accurate when the box's height changes (scoreboard, nudge).
+  useEffect(() => {
+    const el = elements.floating;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setBoxH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [elements.floating]);
+
+  const floating = !!spot && !!elements.reference && isPositioned;
+  const shown = floating ? target : null;
+  const pos = floating ? { x: x ?? 0, y: y ?? 0 } : { x: STAGE_W / 2 - BOX_W / 2, y: STAGE_H / 2 - boxH / 2 };
   const waiting = !!step.action;
+
   return (
     <>
+      <style>{`
+        @keyframes coach-glow {
+          0%, 100% { box-shadow: 0 0 0 3px ${ROYAL}, 0 0 18px 6px rgba(0,83,155,0.55); }
+          50% { box-shadow: 0 0 0 5px ${ROYAL}, 0 0 36px 14px rgba(0,83,155,0.35); }
+        }
+      `}</style>
       <div className="absolute left-5 top-5 z-[60] rounded-full border border-white/40 bg-royal px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-md">
         Practice
       </div>
+
+      {/* dim everything except the target, and glow the target */}
       <motion.div
-        className="absolute left-1/2 top-4 z-[60] w-[680px] -translate-x-1/2 rounded-xl border border-white/10 bg-navy-panel/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm"
+        className="pointer-events-none absolute z-30 rounded-[8px]"
+        initial={false}
+        animate={shown ? { left: shown.x - 6, top: shown.y - 6, width: shown.w + 12, height: shown.h + 12, opacity: 1 } : { left: -40, top: -40, width: STAGE_W + 80, height: STAGE_H + 80, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 170, damping: 24 }}
+        style={{ boxShadow: "0 0 0 4000px rgba(1, 10, 36, 0.45)" }}
+      />
+      <motion.div
+        className="pointer-events-none absolute z-30 rounded-[8px]"
+        initial={false}
+        animate={shown ? { left: shown.x - 6, top: shown.y - 6, width: shown.w + 12, height: shown.h + 12, opacity: 1 } : { opacity: 0 }}
+        transition={{ type: "spring", stiffness: 170, damping: 24 }}
+        style={{ animation: "coach-glow 1.6s ease-in-out infinite" }}
+      />
+
+      {/* the founder's box */}
+      <motion.div
+        // Floating UI's setter is a callback ref, not a ref read; the lint rule can't tell.
+        // eslint-disable-next-line react-hooks/refs
+        ref={refs.setFloating}
+        className="absolute z-[60] rounded-xl border border-white/10 bg-navy-panel/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm"
+        style={{ width: BOX_W, left: 0, top: 0 }}
+        initial={false}
+        animate={{ x: pos.x, y: pos.y }}
+        transition={{ type: "spring", stiffness: 170, damping: 26 }}
       >
+        {floating && <FloatingArrow ref={setArrowEl} context={context} width={20} height={10} tipRadius={2} fill="#0b1e4d" stroke="rgba(255,255,255,0.12)" strokeWidth={1} />}
         <div className="flex items-start gap-3">
           <FounderAvatar size={38} />
           <div className="min-w-0 flex-1">
@@ -88,11 +178,7 @@ export default function PracticeCoach({ step, index, text, nudge, scoreboard, on
               </button>
               {waiting ? (
                 <span className="flex items-center gap-2 text-[11.5px] text-silver/70">
-                  <motion.i
-                    className="inline-block h-2 w-2 rounded-full bg-royal-bright"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 1.4 }}
-                  />
+                  <motion.i className="inline-block h-2 w-2 rounded-full bg-royal-bright" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4 }} />
                   Your move
                 </span>
               ) : (

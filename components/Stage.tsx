@@ -18,6 +18,7 @@ export default function Stage({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#010d2e]">
       <div
+        data-stage
         className="absolute left-1/2 top-1/2"
         style={{
           width: STAGE_W,

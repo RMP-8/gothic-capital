@@ -16,11 +16,12 @@ export interface SideMonitorProps {
   onPreviewOption: (order: OptionOrder) => void;
   onSellOption: (id: string) => void;
   error: string | null;
+  onTabChange?: (tab: "shares" | "call" | "put") => void;
 }
 
 const input = "tabular h-7 rounded border border-white/15 bg-white/5 px-1.5 text-[13px] text-white outline-none focus:border-royal-bright";
 
-export default function SideMonitor({ state, onBuyShares, onSellShares, onPreviewOption, onSellOption, error }: SideMonitorProps) {
+export default function SideMonitor({ state, onBuyShares, onSellShares, onPreviewOption, onSellOption, error, onTabChange }: SideMonitorProps) {
   const [tab, setTab] = useState<Tab>("shares");
   const [qty, setQty] = useState("10");
   const [contracts, setContracts] = useState("1");
@@ -48,11 +49,14 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
         <div className="flex w-[236px] shrink-0 flex-col px-2.5 pt-2">
           <Segmented
             value={tab}
-            onChange={setTab}
+            onChange={(t) => {
+              setTab(t);
+              onTabChange?.(t);
+            }}
             options={[
-              { value: "shares", label: "Shares" },
-              { value: "call", label: "Call" },
-              { value: "put", label: "Put" },
+              { value: "shares", label: "Shares", spot: "shares" },
+              { value: "call", label: "Call", spot: "call" },
+              { value: "put", label: "Put", spot: "put" },
             ]}
           />
           {tab === "shares" ? (
@@ -66,10 +70,10 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
               </div>
               <div className="tabular text-[12px] text-silver/70">≈ {money(n * price)}</div>
               <div className="flex gap-1.5">
-                <Button variant="gain" className="flex-1 px-2 py-1.5 text-[13px]" disabled={!playing || n < 1 || n * price > state.cash + 1e-9} onClick={() => onBuyShares(n)}>
+                <Button data-spot="buy" variant="gain" className="flex-1 px-2 py-1.5 text-[13px]" disabled={!playing || n < 1 || n * price > state.cash + 1e-9} onClick={() => onBuyShares(n)}>
                   Buy
                 </Button>
-                <Button variant="loss" className="flex-1 px-2 py-1.5 text-[13px]" disabled={!playing || n < 1 || n > state.shares} onClick={() => onSellShares(n)}>
+                <Button data-spot="sell" variant="loss" className="flex-1 px-2 py-1.5 text-[13px]" disabled={!playing || n < 1 || n > state.shares} onClick={() => onSellShares(n)}>
                   Sell
                 </Button>
               </div>
@@ -113,6 +117,7 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
                 </div>
               )}
               <Button
+                data-spot="preview"
                 className="w-full px-2 py-1.5 text-[13px]"
                 disabled={!playing || c < 1 || !quote || quote.totalCost > state.cash + 1e-9 || weeksLeft < expiry}
                 onClick={() => onPreviewOption({ type: optionType, expiryWeeks: expiry, strikeMode, contracts: c })}
@@ -132,7 +137,7 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
 
         {/* ---- positions ---- */}
         <div className="my-2 w-px bg-white/10" />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div data-spot="positions" className="flex min-w-0 flex-1 flex-col">
           <div className="px-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-silver/60">Positions</div>
           <div className="monitor-scroll min-h-0 flex-1 overflow-y-auto px-2 pb-2">
             {state.shares === 0 && state.options.length === 0 && <p className="mt-1.5 text-[12px] text-silver/50">All cash. Nothing on the books yet.</p>}
