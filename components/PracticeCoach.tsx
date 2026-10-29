@@ -50,7 +50,7 @@ export default function PracticeCoach({ spot, step, index, text, nudge, scoreboa
     strategy: "absolute",
     placement: "top",
     transform: false,
-    middleware: [offset(18), autoPlacement({ padding: 24 }), shift({ padding: 20 }), arrow({ element: arrowEl, padding: 14 })],
+    middleware: [offset(14), autoPlacement({ padding: 24 }), shift({ padding: 20 }), arrow({ element: arrowEl, padding: 16 })],
     whileElementsMounted: (reference, floating, update) =>
       autoUpdate(reference, floating, () => {
         update();
@@ -111,13 +111,13 @@ export default function PracticeCoach({ spot, step, index, text, nudge, scoreboa
         // Floating UI's setter is a callback ref, not a ref read; the lint rule can't tell.
         // eslint-disable-next-line react-hooks/refs
         ref={refs.setFloating}
-        className="absolute z-[60] rounded-xl border border-white/10 bg-navy-panel/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm"
+        className="absolute z-[60] rounded-xl border-2 border-royal bg-navy-panel/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm"
         style={{ width: BOX_W, left: 0, top: 0 }}
         initial={false}
         animate={{ x: pos.x, y: pos.y }}
         transition={{ type: "spring", stiffness: 170, damping: 26 }}
       >
-        {floating && <FloatingArrow ref={setArrowEl} context={context} width={20} height={10} tipRadius={2} fill="#0b1e4d" stroke="rgba(255,255,255,0.12)" strokeWidth={1} />}
+        {floating && <FloatingArrow ref={setArrowEl} context={context} width={30} height={15} tipRadius={2} fill="#00539b" stroke="#ffffff" strokeWidth={1.5} />}
         <div className="flex items-start gap-3">
           <FounderAvatar size={38} />
           <div className="min-w-0 flex-1">
