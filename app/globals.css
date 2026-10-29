@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #012169;
+  --color-navy-deep: #061231;
+  --color-navy-panel: #0b1e4d;
+  --color-royal: #00539b;
+  --color-royal-bright: #1b6fc2;
+  --color-silver: #c9d1db;
+  --color-muted: #8b98ab;
+  --color-gain: #4cae7c;
+  --color-loss: #d1605e;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  height: 100%;
+  background: #010d2e;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin scrollbars inside monitor panels */
+.monitor-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.monitor-scroll::-webkit-scrollbar-thumb {
+  background: rgba(201, 209, 219, 0.25);
+  border-radius: 3px;
+}
+.monitor-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 209, 219, 0.25) transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
