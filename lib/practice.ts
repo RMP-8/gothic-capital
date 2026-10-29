@@ -32,9 +32,9 @@ export const PRACTICE_WEEKS = 9;
 export const PRACTICE_SHARES = 20;
 export const PRACTICE_SELL = 10;
 
-/** A short stretch of the real data for the practice round, starting about two years in. */
+/** The most recent stretch of the real data for the practice round (the last nine weeks). */
 export function practiceData(full: MarketData): MarketData {
-  const start = Math.max(0, Math.min(full.prices.length - PRACTICE_WEEKS, 100));
+  const start = Math.max(0, full.prices.length - PRACTICE_WEEKS);
   return { ...full, prices: full.prices.slice(start, start + PRACTICE_WEEKS) };
 }
 

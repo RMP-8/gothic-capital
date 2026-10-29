@@ -10,7 +10,8 @@ describe("practice round", () => {
   it("uses a short slice of the real data and a fresh $100k", () => {
     const d = practiceData(full);
     expect(d.prices).toHaveLength(PRACTICE_WEEKS);
-    expect(d.prices[0]).toEqual(full.prices[100]);
+    expect(d.prices[0]).toEqual(full.prices[full.prices.length - PRACTICE_WEEKS]);
+    expect(d.prices.at(-1)).toEqual(full.prices.at(-1));
     expect(d.daily).toBe(full.daily);
     const g = newGame(d);
     expect(g.cash).toBe(100_000);
