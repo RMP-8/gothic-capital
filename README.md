@@ -20,7 +20,7 @@ On day one the founder offers a **practice round**: a guided run over the most r
 - The **risk-free rate** is the 13-week Treasury bill yield, Yahoo symbol `^IRX`, pulled weekly. Its value is an annualized percent (e.g. 4.25). The rate in effect at each game week is the latest `^IRX` close on or before that week.
 - Every new game fetches fresh data, so the five-year window always ends at the most recent week. Results are cached in memory for one hour per server process.
 - **Backup snapshot.** `data/snapshot/SPY.json` and `data/snapshot/IRX.json` hold a copy of the SPY and `^IRX` series. If the live fetch fails or is rate-limited, the SPY game quietly falls back to the snapshot (the main monitor's header says "backup snapshot"). Refresh the snapshot with `npm run snapshot`. Other tickers need the live fetch; if it fails, the start screen says so and suggests SPY.
-- The game never invents news or market events. Everything you see is real price and rate data.
+- The game calendar starts on the day you open the app and advances one week per step; the prices behind it are the real weekly history of the last five years (the chart header notes the real start date). The game never invents news or market events. Everything you see is real price and rate data.
 
 ## How options are priced and settled
 

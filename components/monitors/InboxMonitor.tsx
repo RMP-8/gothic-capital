@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Message } from "@/lib/types";
 import { FOUNDER_NAME } from "@/lib/messages";
 import { longDate } from "@/lib/format";
+import { shownDate } from "@/lib/engine";
 import { FounderAvatar, Monitor } from "@/components/ui";
 
-export default function InboxMonitor({ messages }: { messages: Message[] }) {
+export default function InboxMonitor({ messages, dateOffset = 0 }: { messages: Message[]; dateOffset?: number }) {
   const list = messages.slice().reverse();
   return (
     <Monitor title="Inbox" right={<span className="text-[11px] text-silver/60">{messages.length}</span>}>
@@ -34,7 +35,7 @@ export default function InboxMonitor({ messages }: { messages: Message[] }) {
                 <span className="text-[12px] font-semibold text-white">
                   {m.from === "founder" ? FOUNDER_NAME : "Investor Relations"}
                 </span>
-                <span className="ml-auto text-[10px] text-silver/50">{longDate(m.date)}</span>
+                <span className="ml-auto text-[10px] text-silver/50">{longDate(shownDate({ dateOffset }, m.date))}</span>
               </div>
               <p className="text-[13px] leading-snug text-silver">{m.text}</p>
             </motion.div>

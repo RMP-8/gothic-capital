@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Area, AreaChart, Line, LineChart, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from "recharts";
 import type { GameState } from "@/lib/types";
 import { longDate, money, num, pct, shortDate } from "@/lib/format";
+import { shownDate } from "@/lib/engine";
 import { Monitor } from "@/components/ui";
 
 const COL_W = 258;
@@ -48,12 +49,12 @@ export default function MainMonitor({ state }: { state: GameState }) {
   const rows = useMemo<Row[]>(
     () =>
       state.history.map((value, i) => ({
-        date: state.data.prices[i].date,
+        date: shownDate(state, state.data.prices[i].date),
         price: state.data.prices[i].close,
         value,
         bnh: state.bnhHistory[i],
       })),
-    [state.history, state.bnhHistory, state.data.prices],
+    [state],
   );
   const price = state.data.prices[state.week].close;
   const prevPrice = state.week > 0 ? state.data.prices[state.week - 1].close : price;
@@ -71,7 +72,12 @@ export default function MainMonitor({ state }: { state: GameState }) {
   return (
     <Monitor
       title={`${state.ticker} · weekly, adjusted close`}
-      right={<span className="text-[10px] text-silver/70">{state.data.source === "snapshot" ? "Backup snapshot" : "Live data"}</span>}
+      right={
+        <span className="text-[10px] text-silver/70">
+          {state.dateOffset ? `real prices from ${shortDate(state.data.prices[0].date)} · ` : ""}
+          {state.data.source === "snapshot" ? "backup snapshot" : "live data"}
+        </span>
+      }
     >
       <div className="flex h-full">
         {/* price */}

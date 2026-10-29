@@ -122,6 +122,8 @@ export interface GameState {
   vols: number[];
   rates: number[];
   nextId: number;
+  /** Days added to every real data date for display, so the game calendar starts on the day the player opened the app. */
+  dateOffset: number;
 }
 
 export const STARTING_CASH = 100_000;

@@ -22,6 +22,17 @@ export function addDays(iso: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+export function daysBetween(fromIso: string, toIso: string): number {
+  const a = new Date(fromIso + "T00:00:00Z").getTime();
+  const b = new Date(toIso + "T00:00:00Z").getTime();
+  return Math.round((b - a) / 86_400_000);
+}
+
+/** The date shown to the player for a real data date (shifted so week 1 is the day the app was opened). */
+export function shownDate(s: { dateOffset: number }, iso: string): string {
+  return s.dateOffset ? addDays(iso, s.dateOffset) : iso;
+}
+
 export function optionLabel(o: { type: string; strike: number; contracts: number }): string {
   const n = o.contracts === 1 ? "1 contract" : `${o.contracts} contracts`;
   return `${o.type} (${n}, $${o.strike.toFixed(2)} strike)`;
@@ -91,8 +102,9 @@ function push(s: GameState, kind: MessageKind, ctx: MessageCtx): GameState {
 
 /* ---------- lifecycle ---------- */
 
-export function newGame(data: MarketData): GameState {
+export function newGame(data: MarketData, startDate?: string): GameState {
   if (data.prices.length < 2) throw new Error("Need at least two weeks of prices");
+  const dateOffset = startDate ? daysBetween(data.prices[0].date, startDate) : 0;
   const { vols, rates } = precompute(data);
   const bnhShares = STARTING_CASH / data.prices[0].close;
   const base: GameState = {
@@ -117,6 +129,7 @@ export function newGame(data: MarketData): GameState {
     vols,
     rates,
     nextId: 1,
+    dateOffset,
   };
   return push(base, "welcome", {});
 }

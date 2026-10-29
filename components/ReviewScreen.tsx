@@ -8,6 +8,7 @@ import { STARTING_CASH } from "@/lib/types";
 import { computeStats, type PerformanceStats } from "@/lib/metrics";
 import { FOUNDER_NAME } from "@/lib/messages";
 import { longDate, money, num, pct, pctPlain, shortDate } from "@/lib/format";
+import { shownDate } from "@/lib/engine";
 import ConferenceRoom from "@/components/office/ConferenceRoom";
 import { Button, FounderAvatar } from "@/components/ui";
 
@@ -47,7 +48,7 @@ export default function ReviewScreen({
   const player = useMemo(() => computeStats(state.history, state.rates), [state]);
   const bnh = useMemo(() => computeStats(state.bnhHistory, state.rates), [state]);
   const rows = useMemo(
-    () => state.history.map((value, i) => ({ date: state.data.prices[i].date, value, bnh: state.bnhHistory[i] })),
+    () => state.history.map((value, i) => ({ date: shownDate(state, state.data.prices[i].date), value, bnh: state.bnhHistory[i] })),
     [state],
   );
   const ticks = useMemo(() => [0, 0.25, 0.5, 0.75, 1].map((f) => rows[Math.round(f * (rows.length - 1))].date), [rows]);

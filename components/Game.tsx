@@ -36,6 +36,12 @@ type Modal =
 
 const TIMES: TimeOfDay[] = ["morning", "midday", "afternoon"];
 
+/** Today's date in the player's local time zone, as YYYY-MM-DD. */
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function Game() {
   const [phase, setPhase] = useState<Phase>("start");
   const [game, setGame] = useState<GameState | null>(null);
@@ -98,13 +104,13 @@ export default function Game() {
     setStepIdx(0);
     setBefore(null);
     setNudge(null);
-    setGameAndPhase(newGame(practiceData(full)), "practice");
+    setGameAndPhase(newGame(practiceData(full), todayIso()), "practice");
   }, [setGameAndPhase]);
 
   const startReal = useCallback(() => {
     const full = fullData.current;
     if (!full) return;
-    setGameAndPhase(newGame(full), "playing");
+    setGameAndPhase(newGame(full, todayIso()), "playing");
   }, [setGameAndPhase]);
 
   const load = useCallback(
@@ -283,7 +289,7 @@ export default function Game() {
       {game && (phase === "playing" || phase === "practice") && (
         <>
           <MonitorFrame {...MONITOR.inbox} shadow={shadow} spot="inbox">
-            <InboxMonitor messages={game.messages} />
+            <InboxMonitor messages={game.messages} dateOffset={game.dateOffset} />
           </MonitorFrame>
           <MonitorFrame {...MONITOR.ticket} shadow={shadow} spot="ticket">
             <SideMonitor

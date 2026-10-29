@@ -9,6 +9,7 @@ import {
   quoteOption,
   sellOption,
   sellShares,
+  shownDate,
   skipWeeks,
   spot,
 } from "@/lib/engine";
@@ -94,6 +95,16 @@ describe("trading rules", () => {
   it("computes year-end bonuses", () => {
     expect(computeBonus(0.2, true)).toBe(17_500);
     expect(computeBonus(-0.1, false)).toBe(2_500);
+  });
+});
+
+describe("game calendar", () => {
+  it("can start on the day the app is opened while keeping the real data untouched", () => {
+    const g = newGame(data, "2026-10-29");
+    expect(g.data.prices[0].date).toBe(data.prices[0].date);
+    expect(shownDate(g, data.prices[0].date)).toBe("2026-10-29");
+    expect(shownDate(g, data.prices[1].date)).toBe("2026-11-05");
+    expect(newGame(data).dateOffset).toBe(0);
   });
 });
 
