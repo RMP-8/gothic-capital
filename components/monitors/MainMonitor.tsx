@@ -6,8 +6,8 @@ import type { GameState } from "@/lib/types";
 import { longDate, money, num, pct, shortDate } from "@/lib/format";
 import { Monitor } from "@/components/ui";
 
-const COL_W = 240;
-const CHART_H = 236;
+const COL_W = 258;
+const CHART_H = 258;
 
 type Row = { date: string; price: number; value: number; bnh: number };
 
@@ -42,7 +42,7 @@ function ValueTip({ active, payload }: TooltipContentProps<TooltipValueType, str
   );
 }
 
-const axisTick = { fill: "#8b98ab", fontSize: 9 };
+const axisTick = { fill: "#8b98ab", fontSize: 10 };
 
 export default function MainMonitor({ state }: { state: GameState }) {
   const rows = useMemo<Row[]>(
@@ -77,8 +77,8 @@ export default function MainMonitor({ state }: { state: GameState }) {
         {/* price */}
         <div className="flex flex-1 flex-col px-2 pt-1.5">
           <div className="flex items-baseline justify-between px-1">
-            <span className="tabular text-[17px] font-semibold leading-none">${num(price)}</span>
-            <span className={`tabular text-[11px] ${priceChange >= 0 ? "text-gain" : "text-loss"}`}>{pct(priceChange)} wk</span>
+            <span className="tabular text-[19px] font-semibold leading-none">${num(price)}</span>
+            <span className={`tabular text-[12px] ${priceChange >= 0 ? "text-gain" : "text-loss"}`}>{pct(priceChange)} wk</span>
           </div>
           <AreaChart accessibilityLayer={false} width={COL_W} height={CHART_H} data={rows} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <defs>
@@ -96,7 +96,7 @@ export default function MainMonitor({ state }: { state: GameState }) {
         <div className="my-2 w-px bg-white/10" />
         {/* portfolio vs buy & hold */}
         <div className="flex flex-1 flex-col px-2 pt-1.5">
-          <div className="flex items-center justify-between px-1 text-[10.5px]">
+          <div className="flex items-center justify-between px-1 text-[11.5px]">
             <span className="flex items-center gap-1">
               <i className="inline-block h-[3px] w-3 rounded bg-royal-bright" />
               <span>You</span>

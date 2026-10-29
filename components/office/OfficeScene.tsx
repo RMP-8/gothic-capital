@@ -318,14 +318,14 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title }: Office
       <rect x="0" y="878" width="1600" height="3" fill="#6b5a3e" fillOpacity="0.5" />
 
       {/* ============ 7. desk items ============ */}
-      {/* plant, left margin */}
+      {/* plant, on the desk at the front left */}
       <g>
-        <ellipse cx={80 + sh.dx * 0.6} cy={792 + sh.dy * 0.4} rx={44} ry={7} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
+        <ellipse cx={160 + sh.dx * 0.6} cy={870 + sh.dy * 0.4} rx={44} ry={7} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
         <g style={{ transformBox: "fill-box", transformOrigin: "50% 100%", transform: `rotate(${leafTilt * 0.15}deg)`, transition: "transform 1.2s ease" } as React.CSSProperties}>
           {[-34, -17, 0, 17, 34].map((dx, i) => (
             <path
               key={i}
-              d={`M80 742 C ${80 + dx * 0.6} ${712 + Math.abs(dx) * 0.4} ${80 + dx * 1.4} ${690 + Math.abs(dx) * 0.5} ${80 + dx * 2.1} ${664 + Math.abs(dx) * 1.1}`}
+              d={`M160 822 C ${160 + dx * 0.6} ${792 + Math.abs(dx) * 0.4} ${160 + dx * 1.4} ${770 + Math.abs(dx) * 0.5} ${160 + dx * 2.1} ${744 + Math.abs(dx) * 1.1}`}
               fill="none"
               strokeWidth="9"
               strokeLinecap="round"
@@ -333,8 +333,8 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title }: Office
             />
           ))}
         </g>
-        <polygon points="48,740 112,740 104,790 56,790" fill="url(#os-pot)" />
-        <rect x="46" y="736" width="68" height="8" rx="2" fill="#dfe3e9" />
+        <polygon points="128,820 192,820 184,868 136,868" fill="url(#os-pot)" />
+        <rect x="126" y="816" width="68" height="8" rx="2" fill="#dfe3e9" />
       </g>
 
       {/* nameplate, left of the keyboard */}
@@ -366,13 +366,13 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title }: Office
 
       {/* desk lamp, right margin */}
       <g>
-        <ellipse cx={1535 + sh.dx * 0.8} cy={792 + sh.dy * 0.4} rx={46} ry={7} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
-        <ellipse cx="1535" cy="788" rx="42" ry="7" fill="#2b3340" />
-        <rect x="1531" y="600" width="8" height="190" fill="#3a4350" />
-        <rect x="1498" y="596" width="74" height="8" rx="2" fill="#3a4350" />
-        <ellipse cx="1535" cy="600" rx="46" ry="6" fill="#2b3340" />
-        <polygon points="1494,560 1576,560 1588,600 1482,600" fill="url(#os-shade)" />
-        <polygon points="1482,600 1588,600 1640,760 1430,760" fill="url(#os-lampGlow)" style={{ opacity: timeOfDay === "afternoon" ? 1 : 0, ...T1 }} />
+        <ellipse cx={1565 + sh.dx * 0.8} cy={792 + sh.dy * 0.4} rx={46} ry={7} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
+        <ellipse cx="1565" cy="788" rx="42" ry="7" fill="#2b3340" />
+        <rect x="1561" y="600" width="8" height="190" fill="#3a4350" />
+        <rect x="1528" y="596" width="74" height="8" rx="2" fill="#3a4350" />
+        <ellipse cx="1565" cy="600" rx="46" ry="6" fill="#2b3340" />
+        <polygon points="1524,560 1606,560 1618,600 1512,600" fill="url(#os-shade)" />
+        <polygon points="1512,600 1618,600 1670,760 1460,760" fill="url(#os-lampGlow)" style={{ opacity: timeOfDay === "afternoon" ? 1 : 0, ...T1 }} />
       </g>
 
       {/* room light tint */}

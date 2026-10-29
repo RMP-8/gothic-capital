@@ -31,12 +31,12 @@ export default function InboxMonitor({ messages }: { messages: Message[] }) {
                     IR
                   </div>
                 )}
-                <span className="text-[11px] font-semibold text-white">
+                <span className="text-[12px] font-semibold text-white">
                   {m.from === "founder" ? FOUNDER_NAME : "Investor Relations"}
                 </span>
                 <span className="ml-auto text-[10px] text-silver/50">{longDate(m.date)}</span>
               </div>
-              <p className="text-[12px] leading-snug text-silver">{m.text}</p>
+              <p className="text-[13px] leading-snug text-silver">{m.text}</p>
             </motion.div>
           ))}
         </AnimatePresence>

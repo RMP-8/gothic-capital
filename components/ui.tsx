@@ -70,7 +70,7 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`rounded px-2 ${size === "sm" ? "py-0.5 text-[11px]" : "py-1 text-[13px]"} font-medium transition-colors ${
+          className={`rounded px-2 ${size === "sm" ? "py-0.5 text-[12px]" : "py-1 text-[13px]"} font-medium transition-colors ${
             value === o.value ? "bg-royal text-white" : "text-silver/80 hover:text-white"
           }`}
         >
