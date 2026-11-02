@@ -7,8 +7,8 @@ import { longDate, money, num, pct, shortDate } from "@/lib/format";
 import { shownDate } from "@/lib/engine";
 import { Monitor } from "@/components/ui";
 
-const COL_W = 258;
-const CHART_H = 258;
+const COL_W = 276;
+const CHART_H = 282;
 
 type Row = { date: string; price: number; value: number; bnh: number };
 
@@ -43,7 +43,7 @@ function ValueTip({ active, payload }: TooltipContentProps<TooltipValueType, str
   );
 }
 
-const axisTick = { fill: "#8b98ab", fontSize: 10 };
+const axisTick = { fill: "#9aa7ba", fontSize: 10.5 };
 
 export default function MainMonitor({ state }: { state: GameState }) {
   const rows = useMemo<Row[]>(

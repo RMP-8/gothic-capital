@@ -43,7 +43,7 @@ export default function MonitorFrame({
       {/* bezel */}
       <div data-spot={spot} className="absolute inset-x-0 top-0 rounded-[6px] bg-[#111418]" style={{ height: h + bezel * 2 + chin, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} />
       {/* screen */}
-      <div className="absolute overflow-hidden rounded-[3px] bg-navy-deep" style={{ left: bezel, top: bezel, width: w, height: h }}>
+      <div className="absolute overflow-hidden rounded-[3px] bg-navy-deep" style={{ left: bezel, top: bezel, width: w, height: h, boxShadow: "0 0 24px rgba(27,111,194,0.25)" }}>
         {children}
       </div>
     </div>

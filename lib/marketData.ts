@@ -54,8 +54,28 @@ export async function fetchTickerLive(ticker: string): Promise<{ prices: PricePo
   dailyStart.setUTCDate(dailyStart.getUTCDate() - 45);
   const [weekly, daily] = await Promise.all([chart(ticker, "1wk", start), chart(ticker, "1d", dailyStart)]);
   const prices = normalizeQuotes(weekly);
-  if (prices.length < 52) throw new Error(`Only ${prices.length} weekly bars for ${ticker}`);
+  if (prices.length < MIN_WEEKS) throw new Error(`${ticker} only has ${prices.length} weeks of price history; the game needs at least ${MIN_WEEKS}.`);
   return { prices, daily: normalizeQuotes(daily) };
+}
+
+/** Fewer than five years is fine; the game just runs shorter. */
+export const MIN_WEEKS = 26;
+
+/** "brk.b" -> "BRK-B", " spy " -> "SPY" */
+export function normalizeTicker(raw: string): string {
+  return raw.trim().toUpperCase().replace(/\s+/g, " ").replace(/\.(?=[A-Z]$)/, "-");
+}
+
+/** Resolve a company name or loose symbol ("apple", "berkshire") to a Yahoo symbol via search. */
+export async function resolveSymbol(query: string): Promise<string | null> {
+  try {
+    const res = await yf.search(query, { quotesCount: 6, newsCount: 0 }, { fetchOptions: { signal: AbortSignal.timeout(8_000) } });
+    const quotes = (res.quotes ?? []) as Array<{ symbol?: string; quoteType?: string; isYahooFinance?: boolean }>;
+    const hit = quotes.find((q) => q.symbol && (q.quoteType === "EQUITY" || q.quoteType === "ETF" || q.quoteType === "INDEX" || q.quoteType === "MUTUALFUND"));
+    return hit?.symbol ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /** Live fetch of the 13-week T-bill yield (^IRX), weekly, in percent. */
@@ -69,7 +89,7 @@ export async function fetchRatesLive(): Promise<RatePoint[]> {
 }
 
 export function isValidTicker(t: string): boolean {
-  return /^[A-Z0-9.^=-]{1,12}$/.test(t);
+  return /^[A-Z0-9 .^=&'-]{1,40}$/.test(t);
 }
 
 export type TickerSnapshot = { ticker: string; fetchedAt: string; prices: PricePoint[]; daily: PricePoint[] };

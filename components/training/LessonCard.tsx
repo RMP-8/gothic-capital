@@ -44,7 +44,7 @@ export default function LessonCard({ lesson, index, passed, onPassed, onNext, on
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-royal-bright">{lesson.term}</div>
                 <h2 className="text-[16px] font-semibold leading-tight">{lesson.title}</h2>
-                <p className="mt-1 text-[12px] leading-snug text-silver">{lesson.body}</p>
+                <p className="mt-1 text-[12.5px] leading-snug text-silver">{lesson.body}</p>
                 <div className="mt-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] leading-snug text-silver/90">
                   <span className="font-semibold text-white">Example. </span>
                   {lesson.example}
@@ -63,7 +63,7 @@ export default function LessonCard({ lesson, index, passed, onPassed, onNext, on
                   </div>
                 </div>
               </div>
-              <div className="flex w-[232px] shrink-0 items-start justify-center pt-1">
+              <div className="flex w-[240px] shrink-0 items-start justify-center pt-1">
                 <LessonVisual kind={lesson.visual} />
               </div>
             </motion.div>

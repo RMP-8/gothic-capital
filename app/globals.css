@@ -2,12 +2,12 @@
 
 @theme {
   --color-navy: #012169;
-  --color-navy-deep: #061231;
-  --color-navy-panel: #0b1e4d;
+  --color-navy-deep: #0b2158;
+  --color-navy-panel: #0e2763;
   --color-royal: #00539b;
   --color-royal-bright: #1b6fc2;
-  --color-silver: #c9d1db;
-  --color-muted: #8b98ab;
+  --color-silver: #d6dde6;
+  --color-muted: #9aa7ba;
   --color-gain: #4cae7c;
   --color-loss: #d1605e;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;

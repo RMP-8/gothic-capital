@@ -31,7 +31,7 @@ export default function StartScreen({
             className="mt-6 flex items-end gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!loading) onStart(ticker.trim().toUpperCase() || "SPY");
+              if (!loading) onStart(ticker.trim() || "SPY");
             }}
           >
             <label className="flex flex-col gap-1 text-[11px] uppercase tracking-[0.18em] text-silver/60">
@@ -39,8 +39,9 @@ export default function StartScreen({
               <input
                 value={ticker}
                 onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                maxLength={10}
-                className="h-11 w-40 rounded-md border border-white/15 bg-white/5 px-3 text-[18px] font-semibold tracking-wider text-white outline-none focus:border-royal-bright"
+                maxLength={30}
+                placeholder="SPY, AAPL, Apple…"
+                className="h-11 w-56 rounded-md border border-white/15 bg-white/5 px-3 text-[18px] font-semibold tracking-wider text-white outline-none focus:border-royal-bright"
                 disabled={loading}
               />
             </label>
@@ -49,7 +50,7 @@ export default function StartScreen({
             </Button>
           </form>
           <p className="mt-3 text-[12px] text-silver/55">
-            SPY (an S&amp;P 500 fund) is the default. Any ticker with five years of history works, e.g. AAPL, MSFT, QQQ.
+            SPY (an S&amp;P 500 fund) is the default. Type any ticker or company name, e.g. AAPL, MSFT, QQQ, Tesla, BRK.B. Newer stocks simply play a shorter game.
           </p>
           {error && <p className="mt-3 text-[13px] text-loss">{error}</p>}
         </Card>

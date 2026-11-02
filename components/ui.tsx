@@ -40,8 +40,8 @@ export function Monitor({
 }) {
   return (
     <div
-      className="absolute inset-0 flex flex-col overflow-hidden bg-navy-deep text-white"
-      style={{ boxShadow: "inset 0 0 40px rgba(0,0,0,0.35)" }}
+      className="absolute inset-0 flex flex-col overflow-hidden text-white"
+      style={{ background: "linear-gradient(180deg, #10296b 0%, #0b2158 100%)", boxShadow: "inset 0 0 30px rgba(0,0,0,0.25)" }}
     >
       <div className="flex h-8 shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.03] px-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/80">{title}</span>

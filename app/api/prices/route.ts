@@ -6,6 +6,8 @@ import {
   fetchRatesLive,
   fetchTickerLive,
   isValidTicker,
+  normalizeTicker,
+  resolveSymbol,
   type RateSnapshot,
   type TickerSnapshot,
 } from "@/lib/marketData";
@@ -23,14 +25,27 @@ const TTL_MS = 60 * 60 * 1000;
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const ticker = (url.searchParams.get("ticker") || "SPY").trim().toUpperCase();
-  if (!isValidTicker(ticker)) {
-    return NextResponse.json({ error: "That doesn't look like a ticker symbol." }, { status: 400 });
+  const raw = normalizeTicker(url.searchParams.get("ticker") || "SPY");
+  if (!isValidTicker(raw)) {
+    return NextResponse.json({ error: "That doesn't look like a ticker symbol or company name." }, { status: 400 });
   }
-  const hit = cache.get(ticker);
+  const hit = cache.get(raw);
   if (hit && Date.now() - hit.at < TTL_MS) return NextResponse.json(hit.data);
 
-  const [tickerRes, ratesRes] = await Promise.allSettled([fetchTickerLive(ticker), fetchRatesLive()]);
+  let ticker = raw;
+  const first = await Promise.allSettled([fetchTickerLive(ticker), fetchRatesLive()]);
+  let tickerRes = first[0];
+  const ratesRes = first[1];
+  // Not a symbol Yahoo knows (or a company name)? Ask Yahoo search and try the best match.
+  if (tickerRes.status === "rejected") {
+    const resolved = await resolveSymbol(raw);
+    if (resolved && resolved !== raw) {
+      ticker = resolved;
+      const cached = cache.get(ticker);
+      if (cached && Date.now() - cached.at < TTL_MS) return NextResponse.json(cached.data);
+      [tickerRes] = await Promise.allSettled([fetchTickerLive(ticker)]);
+    }
+  }
 
   const rates = ratesRes.status === "fulfilled" ? ratesRes.value : irxBackup.rates;
   let data: MarketData;
@@ -41,10 +56,11 @@ export async function GET(req: Request) {
   } else {
     const reason = tickerRes.reason instanceof Error ? tickerRes.reason.message : String(tickerRes.reason);
     return NextResponse.json(
-      { error: `Couldn't load ${ticker} right now (${reason}). Try SPY, which always works.` },
+      { error: `Couldn't find prices for "${raw}" (${reason}). Try a ticker like AAPL or a company name like Apple; SPY always works.` },
       { status: 502 },
     );
   }
-  cache.set(ticker, { at: Date.now(), data });
+  cache.set(raw, { at: Date.now(), data });
+  if (ticker !== raw) cache.set(ticker, { at: Date.now(), data });
   return NextResponse.json(data);
 }

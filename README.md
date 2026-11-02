@@ -19,6 +19,7 @@ The game has three levels, shown as a progress path after you pick a ticker; you
 
 ## Where the data comes from and how it updates
 
+- You can type any ticker or company name on the start screen. Symbols are normalized (BRK.B becomes BRK-B) and anything Yahoo doesn't recognize as a symbol is looked up with Yahoo's search, so "Apple" resolves to AAPL. Tickers with less than five years of history simply play a shorter game (minimum 26 weeks).
 - Prices come from Yahoo Finance through the [`yahoo-finance2`](https://www.npmjs.com/package/yahoo-finance2) npm package (its `chart()` method), fetched server-side by the Next.js route `app/api/prices/route.ts`. Nothing is fetched from the browser and no API key is needed.
 - For each ticker the route pulls **5 years of weekly bars** (the game timeline) and **5 years of daily bars** (used only to compute 20-trading-day historical volatility for option pricing). The game uses **adjusted close** prices, so dividends and splits are reflected fairly in both your results and the buy-and-hold benchmark.
 - The **risk-free rate** is the 13-week Treasury bill yield, Yahoo symbol `^IRX`, pulled weekly. Its value is an annualized percent (e.g. 4.25). The rate in effect at each game week is the latest `^IRX` close on or before that week.

@@ -37,7 +37,7 @@ export default function InboxMonitor({ messages, dateOffset = 0 }: { messages: M
                 </span>
                 <span className="ml-auto text-[10px] text-silver/50">{longDate(shownDate({ dateOffset }, m.date))}</span>
               </div>
-              <p className="text-[13px] leading-snug text-silver">{m.text}</p>
+              <p className="text-[13.5px] leading-snug text-silver">{m.text}</p>
             </motion.div>
           ))}
         </AnimatePresence>

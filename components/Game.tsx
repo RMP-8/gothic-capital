@@ -176,6 +176,7 @@ export default function Game() {
         const body = await res.json();
         if (!res.ok) throw new Error(body.error || "Couldn't load prices.");
         fullData.current = body as MarketData;
+        setTicker((body as MarketData).ticker); // the resolved symbol, e.g. "Apple" -> AAPL
         if (then === "practice") startPractice();
         else if (then === "training") startTraining();
         else if (then === "real") startReal();

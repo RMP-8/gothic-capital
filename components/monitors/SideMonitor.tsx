@@ -46,7 +46,7 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
     <Monitor title="Order ticket" right={<span className="tabular text-[10px] text-silver/70">cash {money(state.cash)}</span>}>
       <div className="flex h-full">
         {/* ---- ticket ---- */}
-        <div className="flex w-[236px] shrink-0 flex-col px-2.5 pt-2">
+        <div className="flex w-[244px] shrink-0 flex-col px-2.5 pt-2">
           <Segmented
             value={tab}
             onChange={(t) => {

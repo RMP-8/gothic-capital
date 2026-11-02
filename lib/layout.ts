@@ -7,9 +7,9 @@ export interface Rect {
 }
 
 export const MONITOR = {
-  inbox: { x: 70, y: 460, w: 440, h: 290 },
-  main: { x: 530, y: 412, w: 540, h: 338 },
-  ticket: { x: 1090, y: 460, w: 440, h: 290 },
+  inbox: { x: 40, y: 445, w: 460, h: 305 },
+  main: { x: 512, y: 390, w: 576, h: 360 },
+  ticket: { x: 1100, y: 445, w: 460, h: 305 },
 } as const;
 
 export const MONITOR_BEZEL = 6;
