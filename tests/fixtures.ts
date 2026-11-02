@@ -18,8 +18,8 @@ export function syntheticMarket(weeks = 261, ticker = "TEST"): MarketData {
     const monday = addDays(start, w * 7);
     const friday = addDays(monday, 4);
     const close = daily.filter((p) => p.date <= friday).at(-1)!.close;
-    prices.push({ date: monday, close });
-    rates.push({ date: monday, rate: 4 + Math.sin(w / 30) });
+    prices.push({ date: friday, close });
+    rates.push({ date: friday, rate: 4 + Math.sin(w / 30) });
   }
   return { ticker, prices, daily, rates, source: "snapshot", fetchedAt: "2026-01-01T00:00:00Z" };
 }

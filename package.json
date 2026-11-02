@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "snapshot": "tsx scripts/snapshot.ts"
+    "snapshot": "tsx scripts/snapshot.ts",
+    "update-data": "tsx scripts/snapshot.ts",
+    "audit-data": "tsx scripts/audit.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",

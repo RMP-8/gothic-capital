@@ -21,10 +21,11 @@ The game has three levels, shown as a progress path after you pick a ticker; you
 
 - You can type any ticker or company name on the start screen. Symbols are normalized (BRK.B becomes BRK-B) and anything Yahoo doesn't recognize as a symbol is looked up with Yahoo's search, so "Apple" resolves to AAPL. Tickers with less than five years of history simply play a shorter game (minimum 26 weeks).
 - Prices come from Yahoo Finance through the [`yahoo-finance2`](https://www.npmjs.com/package/yahoo-finance2) npm package (its `chart()` method), fetched server-side by the Next.js route `app/api/prices/route.ts`. Nothing is fetched from the browser and no API key is needed.
-- For each ticker the route pulls **5 years of weekly bars** (the game timeline) and **5 years of daily bars** (used only to compute 20-trading-day historical volatility for option pricing). The game uses **adjusted close** prices, so dividends and splits are reflected fairly in both your results and the buy-and-hold benchmark.
-- The **risk-free rate** is the 13-week Treasury bill yield, Yahoo symbol `^IRX`, pulled weekly. Its value is an annualized percent (e.g. 4.25). The rate in effect at each game week is the latest `^IRX` close on or before that week.
+- For each ticker the route pulls **5 years of weekly bars** (the game timeline) and **5 years of daily bars** (used to compute 20-trading-day historical volatility for option pricing). The game uses **adjusted close** prices, so dividends and splits are reflected fairly in both your results and the buy-and-hold benchmark.
+- Each weekly bar is dated by the week's **last trading day** (usually Friday; Thursday in a holiday-shortened week), taken from the daily series. The current week is left out until its Friday has passed, so the game always ends on the latest completed trading week, and the window is trimmed to exactly the most recent five years. The chart header shows "Data as of [date] · Source: Yahoo Finance", with "Using saved data" appended if the backup snapshot is in use.
+- The **risk-free rate** is the 13-week Treasury bill yield, Yahoo symbol `^IRX`, pulled weekly. Its value is an annualized percent (e.g. 4.25). The rate in effect at each game week is the latest `^IRX` close on or before that week's last trading day. For the Sharpe ratio it is converted to a weekly rate (annual % ÷ 100 ÷ 52); for Black-Scholes it is used as the annual rate with time to expiry in years, which is the form the formula expects.
 - Every new game fetches fresh data, so the five-year window always ends at the most recent week. Results are cached in memory for one hour per server process.
-- **Backup snapshot.** `data/snapshot/SPY.json` and `data/snapshot/IRX.json` hold a copy of the SPY and `^IRX` series. If the live fetch fails or is rate-limited, the SPY game quietly falls back to the snapshot (the main monitor's header says "backup snapshot"). Refresh the snapshot with `npm run snapshot`. Other tickers need the live fetch; if it fails, the start screen says so and suggests SPY.
+- **Backup snapshot.** `data/snapshot/SPY.json` and `data/snapshot/IRX.json` hold a copy of the SPY and `^IRX` series. If the live fetch fails or is rate-limited, the SPY game quietly falls back to the snapshot (the main monitor's header says "backup snapshot"). Refresh the snapshot with `npm run update-data`; a GitHub Action (`.github/workflows/update-data.yml`) runs it every Monday and commits the result, so the backup stays current too. Other tickers need the live fetch; if it fails, the start screen says so and suggests SPY.
 - The game calendar starts on the day you open the app and advances one week per step; the prices behind it are the real weekly history of the last five years (the chart header notes the real start date). The game never invents news or market events. Everything you see is real price and rate data.
 
 ## How options are priced and settled
@@ -54,7 +55,8 @@ The year-end bonus is a fun flourish, not a metric: $2,500 base, plus $50,000 ×
 npm install
 npm run dev        # http://localhost:3000
 npm test           # unit tests: Black-Scholes, metrics, engine, and a full 5-year game
-npm run snapshot   # refresh data/snapshot/*.json from Yahoo Finance
+npm run update-data   # refresh data/snapshot/*.json from Yahoo Finance
+npm run audit-data    # print Yahoo weekly closes at five dates for SPY/AAPL/MSFT for cross-checking
 npm run build
 ```
 

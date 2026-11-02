@@ -85,9 +85,9 @@ export default function MainMonitor({ state, compact = false }: { state: GameSta
     <Monitor
       title={`${state.ticker} · weekly, adjusted close`}
       right={
-        <span className="text-[10px] text-ink-2">
-          {state.dateOffset ? `real prices from ${shortDate(state.data.prices[0].date)} · ` : ""}
-          {state.data.source === "snapshot" ? "backup snapshot" : "live data"}
+        <span className="text-[10px] text-ink-2" title={`Real ${state.ticker} prices from ${longDate(state.data.prices[0].date)} to ${longDate(state.data.prices[state.data.prices.length - 1].date)}`}>
+          Data as of {longDate(state.data.prices[state.data.prices.length - 1].date)} · Source: Yahoo Finance
+          {state.data.source === "snapshot" ? " · Using saved data" : ""}
         </span>
       }
     >

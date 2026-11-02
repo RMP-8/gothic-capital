@@ -46,7 +46,8 @@ export function precompute(data: MarketData): { vols: number[]; rates: number[] 
   let rPtr = -1;
   const dailyCloses: number[] = [];
   for (let i = 0; i < data.prices.length; i++) {
-    const weekEnd = addDays(data.prices[i].date, 6);
+    // Each weekly bar is dated by the week's last trading day, so use data on or before that day.
+    const weekEnd = data.prices[i].date;
     while (dPtr < data.daily.length && data.daily[dPtr].date <= weekEnd) {
       dailyCloses.push(data.daily[dPtr].close);
       dPtr++;
