@@ -7,7 +7,7 @@ type Variant = "primary" | "ghost" | "gain" | "loss";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-royal hover:bg-royal-bright text-white shadow-[0_2px_12px_rgba(0,83,155,0.45)]",
-  ghost: "bg-white/5 hover:bg-white/10 text-silver border border-white/10",
+  ghost: "bg-ink/5 hover:bg-ink/10 text-ink border border-ink/15",
   gain: "bg-gain/20 hover:bg-gain/30 text-gain border border-gain/40",
   loss: "bg-loss/20 hover:bg-loss/30 text-loss border border-loss/40",
 };
@@ -40,11 +40,11 @@ export function Monitor({
 }) {
   return (
     <div
-      className="absolute inset-0 flex flex-col overflow-hidden text-white"
-      style={{ background: "linear-gradient(180deg, #10296b 0%, #0b2158 100%)", boxShadow: "inset 0 0 30px rgba(0,0,0,0.25)" }}
+      className="screen-light absolute inset-0 flex flex-col overflow-hidden text-ink"
+      style={{ background: "linear-gradient(180deg, #ffffff 0%, #f3f6fb 100%)", boxShadow: "inset 0 0 24px rgba(1,33,105,0.08)" }}
     >
-      <div className="flex h-8 shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.03] px-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/80">{title}</span>
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-ink/10 bg-ink/[0.03] px-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-2">{title}</span>
         {right}
       </div>
       <div className="relative min-h-0 flex-1">{children}</div>
@@ -64,7 +64,7 @@ export function Segmented<T extends string>({
   size?: "sm" | "md";
 }) {
   return (
-    <div className="inline-flex rounded-md border border-white/10 bg-white/5 p-0.5">
+    <div className="inline-flex rounded-md border border-ink/10 bg-ink/5 p-0.5">
       {options.map((o) => (
         <button
           key={o.value}
@@ -72,7 +72,7 @@ export function Segmented<T extends string>({
           data-spot={o.spot}
           onClick={() => onChange(o.value)}
           className={`rounded px-2 ${size === "sm" ? "py-0.5 text-[12px]" : "py-1 text-[13px]"} font-medium transition-colors ${
-            value === o.value ? "bg-royal text-white" : "text-silver/80 hover:text-white"
+            value === o.value ? "bg-royal text-white" : "text-ink-2 hover:text-ink"
           }`}
         >
           {o.label}

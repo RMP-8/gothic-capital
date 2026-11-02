@@ -5,9 +5,9 @@ import PayoffSlider from "./PayoffSlider";
 
 const W = 230;
 const H = 170;
-const BLUE = "#1b6fc2";
-const GRAY = "#c9d1db";
-const MUTED = "#8b98ab";
+const BLUE = "#00539b";
+const GRAY = "#9aa7ba";
+const MUTED = "#6b7a93";
 
 function Frame({ children, caption }: { children: React.ReactNode; caption?: string }) {
   return (
@@ -15,7 +15,7 @@ function Frame({ children, caption }: { children: React.ReactNode; caption?: str
       <svg width={W} height={H} className="block">
         {children}
       </svg>
-      {caption && <div className="mt-1 text-center text-[10.5px] text-silver/70">{caption}</div>}
+      {caption && <div className="mt-1 text-center text-[10.5px] text-ink-2">{caption}</div>}
     </div>
   );
 }
@@ -38,13 +38,13 @@ export default function LessonVisual({ kind }: { kind: VisualKind }) {
       const slice = `M${cx},${cy} L${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)} A${r},${r} 0 0 1 ${(cx + r * Math.cos(b)).toFixed(1)},${(cy + r * Math.sin(b)).toFixed(1)} Z`;
       return (
         <Frame caption="The company, cut into shares. Your shares are the blue slice.">
-          <circle cx={cx} cy={cy} r={r} fill="rgba(201,209,219,0.18)" stroke={GRAY} strokeWidth={1.5} />
+          <circle cx={cx} cy={cy} r={r} fill="rgba(11,30,77,0.06)" stroke={GRAY} strokeWidth={1.5} />
           {Array.from({ length: 10 }).map((_, i) => {
             const t = ((-90 + i * 36) * Math.PI) / 180;
-            return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(t)} y2={cy + r * Math.sin(t)} stroke="rgba(201,209,219,0.35)" />;
+            return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(t)} y2={cy + r * Math.sin(t)} stroke="rgba(11,30,77,0.2)" />;
           })}
           <path d={slice} fill={BLUE} />
-          <text x={cx} y={cy + r + 22} textAnchor="middle" fontSize={11} fill="#ffffff">
+          <text x={cx} y={cy + r + 22} textAnchor="middle" fontSize={11} fill="#0b1e4d">
             you
           </text>
         </Frame>
@@ -71,11 +71,11 @@ export default function LessonVisual({ kind }: { kind: VisualKind }) {
         <Frame caption="Buy at $100, sell at $110: +$10 per share.">
           {line(vals, GRAY, 2)}
           <circle cx={20} cy={140} r={5} fill="#4cae7c" />
-          <text x={28} y={144} fontSize={10} fill="#ffffff">
+          <text x={28} y={144} fontSize={10} fill="#0b1e4d">
             buy $100
           </text>
           <circle cx={215} cy={20} r={5} fill={BLUE} />
-          <text x={208} y={14} textAnchor="end" fontSize={10} fill="#ffffff">
+          <text x={208} y={14} textAnchor="end" fontSize={10} fill="#0b1e4d">
             sell $110
           </text>
           <text x={118} y={164} textAnchor="middle" fontSize={11} fill="#4cae7c">
@@ -118,7 +118,7 @@ export default function LessonVisual({ kind }: { kind: VisualKind }) {
               </text>
             </g>
           ))}
-          <text x={118} y={130} textAnchor="middle" fontSize={11} fill="#ffffff">
+          <text x={118} y={130} textAnchor="middle" fontSize={11} fill="#0b1e4d">
             stock $103 → call pays $3
           </text>
           <text x={118} y={148} textAnchor="middle" fontSize={11} fill={MUTED}>
@@ -135,10 +135,10 @@ export default function LessonVisual({ kind }: { kind: VisualKind }) {
       const x = (v: number) => 120 + v * 0.45;
       return (
         <Frame caption="Wider bar = wider range of outcomes in a year.">
-          <line x1={x(0)} x2={x(0)} y1={16} y2={140} stroke="rgba(255,255,255,0.25)" />
+          <line x1={x(0)} x2={x(0)} y1={16} y2={140} stroke="rgba(11,30,77,0.25)" />
           {rows.map((r, i) => (
             <g key={r.label}>
-              <text x={16} y={46 + i * 40} fontSize={10} fill="#ffffff">
+              <text x={16} y={46 + i * 40} fontSize={10} fill="#0b1e4d">
                 {r.label}
               </text>
               <rect x={x(Math.min(r.lo, 0))} y={34 + i * 40} width={Math.max(4, x(r.hi) - x(Math.min(r.lo, 0)))} height={16} rx={4} fill={r.color} fillOpacity={0.8} />
@@ -184,7 +184,7 @@ export default function LessonVisual({ kind }: { kind: VisualKind }) {
               <text x={34 + i * 33} y={154} textAnchor="middle" fontSize={9} fill={MUTED}>
                 yr {i}
               </text>
-              <text x={34 + i * 33} y={134 - (v - 60) * 1.1} textAnchor="middle" fontSize={8.5} fill="#ffffff">
+              <text x={34 + i * 33} y={134 - (v - 60) * 1.1} textAnchor="middle" fontSize={8.5} fill="#0b1e4d">
                 {v}k
               </text>
             </g>

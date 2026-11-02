@@ -19,7 +19,7 @@ export interface SideMonitorProps {
   onTabChange?: (tab: "shares" | "call" | "put") => void;
 }
 
-const input = "tabular h-7 rounded border border-white/15 bg-white/5 px-1.5 text-[13px] text-white outline-none focus:border-royal-bright";
+const input = "tabular h-7 rounded border border-ink/20 bg-ink/5 px-1.5 text-[13px] text-ink outline-none focus:border-royal";
 
 export default function SideMonitor({ state, onBuyShares, onSellShares, onPreviewOption, onSellOption, error, onTabChange }: SideMonitorProps) {
   const [tab, setTab] = useState<Tab>("shares");
@@ -43,7 +43,7 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
   const sharesPnl = state.shares > 0 ? (price - state.avgCost) * state.shares : 0;
 
   return (
-    <Monitor title="Order ticket" right={<span className="tabular text-[10px] text-silver/70">cash {money(state.cash)}</span>}>
+    <Monitor title="Order ticket" right={<span className="tabular text-[10px] text-ink-2/70">cash {money(state.cash)}</span>}>
       <div className="flex h-full">
         {/* ---- ticket ---- */}
         <div className="flex w-[244px] shrink-0 flex-col px-2.5 pt-2">
@@ -62,13 +62,13 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
           {tab === "shares" ? (
             <div className="mt-2.5 space-y-2">
               <div className="flex items-center gap-1.5">
-                <label className="text-[12px] text-silver/70">Shares</label>
+                <label className="text-[12px] text-ink-2/70">Shares</label>
                 <input type="number" min={1} value={qty} onChange={(e) => setQty(e.target.value)} className={`${input} w-14`} />
-                <button type="button" onClick={() => setQty(String(maxBuyableShares(state)))} className="text-[12px] text-royal-bright hover:underline">
+                <button type="button" onClick={() => setQty(String(maxBuyableShares(state)))} className="text-[12px] text-royal hover:underline">
                   max {maxBuyableShares(state)}
                 </button>
               </div>
-              <div className="tabular text-[12px] text-silver/70">≈ {money(n * price)}</div>
+              <div className="tabular text-[12px] text-ink-2/70">≈ {money(n * price)}</div>
               <div className="flex gap-1.5">
                 <Button data-spot="buy" variant="gain" className="flex-1 px-2 py-1.5 text-[13px]" disabled={!playing || n < 1 || n * price > state.cash + 1e-9} onClick={() => onBuyShares(n)}>
                   Buy
@@ -77,12 +77,12 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
                   Sell
                 </Button>
               </div>
-              <p className="text-[11px] leading-snug text-silver/55">Own a piece of {state.ticker}. No borrowing, no short selling.</p>
+              <p className="text-[11px] leading-snug text-ink-2/55">Own a piece of {state.ticker}. No borrowing, no short selling.</p>
             </div>
           ) : (
             <div className="mt-2.5 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-silver/70">Expires</span>
+                <span className="text-[12px] text-ink-2/70">Expires</span>
                 <Segmented
                   value={String(expiry) as "4" | "12"}
                   onChange={(v) => setExpiry(Number(v) as ExpiryWeeks)}
@@ -93,7 +93,7 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
                 />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-silver/70">Strike</span>
+                <span className="text-[12px] text-ink-2/70">Strike</span>
                 <Segmented
                   value={strikeMode}
                   onChange={setStrikeMode}
@@ -105,15 +105,15 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
                 />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-silver/70">Contracts (100 sh)</span>
+                <span className="text-[12px] text-ink-2/70">Contracts (100 sh)</span>
                 <input type="number" min={1} value={contracts} onChange={(e) => setContracts(e.target.value)} className={`${input} w-12`} />
               </div>
               {quote && (
-                <div className="flex items-center justify-between rounded bg-white/[0.04] px-1.5 py-1 text-[12px]">
-                  <span className="text-silver/70">
+                <div className="flex items-center justify-between rounded bg-ink/[0.05] px-1.5 py-1 text-[12px]">
+                  <span className="text-ink-2/70">
                     K ${num(quote.strike)} · {money2(quote.premiumPerShare)}/sh
                   </span>
-                  <span className="tabular font-semibold text-white">{money(quote.totalCost)}</span>
+                  <span className="tabular font-semibold text-ink">{money(quote.totalCost)}</span>
                 </div>
               )}
               <Button
@@ -136,20 +136,20 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
         </div>
 
         {/* ---- positions ---- */}
-        <div className="my-2 w-px bg-white/10" />
+        <div className="my-2 w-px bg-ink/10" />
         <div data-spot="positions" className="flex min-w-0 flex-1 flex-col">
-          <div className="px-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-silver/60">Positions</div>
+          <div className="px-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-2/60">Positions</div>
           <div className="monitor-scroll min-h-0 flex-1 overflow-y-auto px-2 pb-2">
-            {state.shares === 0 && state.options.length === 0 && <p className="mt-1.5 text-[12px] text-silver/50">All cash. Nothing on the books yet.</p>}
+            {state.shares === 0 && state.options.length === 0 && <p className="mt-1.5 text-[12px] text-ink-2/50">All cash. Nothing on the books yet.</p>}
             {state.shares > 0 && (
-              <div className="mt-1.5 rounded bg-white/[0.04] px-1.5 py-1 text-[12px]">
+              <div className="mt-1.5 rounded bg-ink/[0.05] px-1.5 py-1 text-[12px]">
                 <div className="flex justify-between">
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-ink">
                     {state.shares} {state.ticker}
                   </span>
-                  <span className="tabular text-white">{money(state.shares * price)}</span>
+                  <span className="tabular text-ink">{money(state.shares * price)}</span>
                 </div>
-                <div className="flex justify-between text-silver/60">
+                <div className="flex justify-between text-ink-2/60">
                   <span>avg {money2(state.avgCost)}</span>
                   <span className={`tabular ${sharesPnl >= 0 ? "text-gain" : "text-loss"}`}>
                     {money(sharesPnl)} ({pct(state.avgCost > 0 ? price / state.avgCost - 1 : 0)})
@@ -162,15 +162,15 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
                 const left = o.expiryWeek - state.week;
                 const pnl = o.value - o.premiumPaid;
                 return (
-                  <motion.div key={o.id} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }} className="mt-1.5 rounded bg-white/[0.04] px-1.5 py-1 text-[12px]">
+                  <motion.div key={o.id} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }} className="mt-1.5 rounded bg-ink/[0.05] px-1.5 py-1 text-[12px]">
                     <div className="flex justify-between">
-                      <span className="font-semibold capitalize text-white">
+                      <span className="font-semibold capitalize text-ink">
                         {o.contracts} {o.type}
                         {o.contracts > 1 ? "s" : ""} · ${num(o.strike)}
                       </span>
-                      <span className="tabular text-white">{money(o.value)}</span>
+                      <span className="tabular text-ink">{money(o.value)}</span>
                     </div>
-                    <div className="flex items-center justify-between text-silver/60">
+                    <div className="flex items-center justify-between text-ink-2/60">
                       <span>
                         {left} wk{left === 1 ? "" : "s"} left · <span className={pnl >= 0 ? "text-gain" : "text-loss"}>{money(pnl)}</span>
                       </span>

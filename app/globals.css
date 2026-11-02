@@ -14,6 +14,26 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+:root {
+  /* text colors on dark surfaces (default) */
+  --ink: #ffffff;
+  --ink-2: #c9d1db;
+}
+/* "ink" utilities read the variable where they are used, so a scope can flip them */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+}
+
+/* white monitor screens: dark text */
+.screen-light {
+  --ink: #0b1e4d;
+  --ink-2: #4b5b76;
+  --color-ink: #0b1e4d;
+  --color-ink-2: #4b5b76;
+  color: var(--ink);
+}
+
 html,
 body {
   height: 100%;
@@ -29,12 +49,12 @@ body {
   width: 6px;
 }
 .monitor-scroll::-webkit-scrollbar-thumb {
-  background: rgba(201, 209, 219, 0.25);
+  background: color-mix(in srgb, var(--ink) 25%, transparent);
   border-radius: 3px;
 }
 .monitor-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(201, 209, 219, 0.25) transparent;
+  scrollbar-color: color-mix(in srgb, var(--ink) 25%, transparent) transparent;
 }
 
 .tabular {
