@@ -9,13 +9,16 @@ export default function StartScreen({
   loading,
   error,
   initialTicker,
+  initialName = "",
 }: {
-  onStart: (ticker: string) => void;
+  onStart: (ticker: string, name: string) => void;
   loading: boolean;
   error: string | null;
   initialTicker: string;
+  initialName?: string;
 }) {
   const [ticker, setTicker] = useState(initialTicker);
+  const [name, setName] = useState(initialName);
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-white/25 p-3 backdrop-blur-[3px]">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}>
@@ -31,9 +34,21 @@ export default function StartScreen({
             className="mt-6 flex flex-wrap items-end gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!loading) onStart(ticker.trim() || "SPY");
+              if (!loading) onStart(ticker.trim() || "SPY", name.trim());
             }}
           >
+            <label className="flex flex-col gap-1 text-[11px] uppercase tracking-[0.18em] text-silver/60">
+              Your name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={24}
+                placeholder="for the nameplate"
+                autoComplete="given-name"
+                className="h-11 w-48 rounded-md border border-white/15 bg-white/5 px-3 text-[16px] font-medium text-white outline-none placeholder:text-silver/40 focus:border-royal-bright"
+                disabled={loading}
+              />
+            </label>
             <label className="flex flex-col gap-1 text-[11px] uppercase tracking-[0.18em] text-silver/60">
               Ticker
               <input
@@ -41,7 +56,7 @@ export default function StartScreen({
                 onChange={(e) => setTicker(e.target.value.toUpperCase())}
                 maxLength={30}
                 placeholder="SPY, AAPL, Apple…"
-                className="h-11 w-56 rounded-md border border-white/15 bg-white/5 px-3 text-[18px] font-semibold tracking-wider text-white outline-none focus:border-royal-bright"
+                className="h-11 w-44 rounded-md border border-white/15 bg-white/5 px-3 text-[18px] font-semibold tracking-wider text-white outline-none focus:border-royal-bright"
                 disabled={loading}
               />
             </label>

@@ -1,17 +1,17 @@
 "use client";
 
 export type TimeOfDay = "morning" | "midday" | "afternoon";
-export type PlantMood = "perky" | "neutral" | "droopy";
 
 export interface OfficeSceneProps {
   timeOfDay: TimeOfDay;
-  plantMood: PlantMood;
   /** 0..1, how fresh the coffee is */
   coffeeLevel: number;
-  /** text on the desk nameplate, e.g. "Junior PM" */
+  /** job title on the desk nameplate, e.g. "Junior PM" */
   title: string;
-  /** show the "Training Complete" badge beside the nameplate */
-  badge?: boolean;
+  /** the player's name, shown large on the nameplate */
+  name?: string;
+  /** lucite "tombstone" awards standing on the desk, in the order earned */
+  awards?: string[];
 }
 
 /* ---------- geometry (1600 x 900 stage) ---------- */
@@ -252,11 +252,9 @@ export function Skyline({ mood: m, bottom, idPrefix }: { mood: Mood; bottom: num
   );
 }
 
-export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title, badge }: OfficeSceneProps) {
+export function OfficeScene({ timeOfDay, coffeeLevel, title, name, awards = [] }: OfficeSceneProps) {
   const m = MOODS[timeOfDay];
   const level = Math.max(0, Math.min(1, coffeeLevel));
-  const leafTilt = plantMood === "perky" ? -14 : plantMood === "droopy" ? 22 : 0;
-  const leafFill = plantMood === "perky" ? "#4a9a66" : plantMood === "droopy" ? "#5f7a5a" : "#4f8a60";
   const sh = m.shadow;
   return (
     <svg viewBox="0 0 1600 900" width="1600" height="900" className="absolute inset-0" aria-hidden>
@@ -289,6 +287,16 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title, badge }:
           <stop offset="0" stopColor="#ffd78a" stopOpacity="0.7" />
           <stop offset="1" stopColor="#ffd78a" stopOpacity="0" />
         </radialGradient>
+        <linearGradient id="os-lucite" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.92" />
+          <stop offset="0.45" stopColor="#dfe9f7" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#b9cbe6" stopOpacity="0.9" />
+        </linearGradient>
+        <linearGradient id="os-deskDepth" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8a7350" stopOpacity="0.28" />
+          <stop offset="0.35" stopColor="#8a7350" stopOpacity="0.06" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0.12" />
+        </linearGradient>
         <linearGradient id="os-plate" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#1b3b8a" />
           <stop offset="1" stopColor="#012169" />
@@ -313,56 +321,67 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title, badge }:
       <rect x="0" y={WINDOW_BOTTOM} width="1600" height="10" fill="#d6dbe3" />
       <rect x="0" y={WINDOW_BOTTOM + 10} width="1600" height="3" fill="#ffffff" fillOpacity="0.8" />
       <rect x="0" y={DESK_TOP} width="1600" height={900 - DESK_TOP} fill="url(#os-desk)" />
-      <rect x="0" y={DESK_TOP} width="1600" height="3" fill="#fff7e8" fillOpacity="0.9" />
-      <rect x="0" y={DESK_TOP - 3} width="1600" height="3" fill="#7a6a4e" fillOpacity="0.25" />
-      {/* front edge */}
-      <rect x="0" y="880" width="1600" height="20" fill="#a98f67" />
-      <rect x="0" y="878" width="1600" height="3" fill="#6b5a3e" fillOpacity="0.5" />
+      <rect x="0" y={DESK_TOP} width="1600" height={900 - DESK_TOP} fill="url(#os-deskDepth)" />
+      {/* where the desk meets the wall: a soft contact shadow */}
+      <rect x="0" y={DESK_TOP} width="1600" height="14" fill="#5a4a2e" fillOpacity="0.18" filter="url(#os-softer)" />
+      <rect x="0" y={DESK_TOP - 2} width="1600" height="2" fill="#7a6a4e" fillOpacity="0.35" />
+      {/* front edge: a lit top rim, then the edge face */}
+      <rect x="0" y="876" width="1600" height="3" fill="#fff4de" fillOpacity="0.9" />
+      <rect x="0" y="879" width="1600" height="21" fill="#a98f67" />
+      <rect x="0" y="879" width="1600" height="21" fill="url(#os-deskEdge)" fillOpacity="0.6" />
 
       {/* ============ 7. desk items ============ */}
-      {/* plant, on the desk at the front left */}
-      <g>
-        <ellipse cx={160 + sh.dx * 0.6} cy={870 + sh.dy * 0.4} rx={44} ry={7} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
-        <g style={{ transformBox: "fill-box", transformOrigin: "50% 100%", transform: `rotate(${leafTilt * 0.15}deg)`, transition: "transform 1.2s ease" } as React.CSSProperties}>
-          {[-34, -17, 0, 17, 34].map((dx, i) => (
-            <path
-              key={i}
-              d={`M160 822 C ${160 + dx * 0.6} ${792 + Math.abs(dx) * 0.4} ${160 + dx * 1.4} ${770 + Math.abs(dx) * 0.5} ${160 + dx * 2.1} ${744 + Math.abs(dx) * 1.1}`}
-              fill="none"
-              strokeWidth="9"
-              strokeLinecap="round"
-              style={{ stroke: leafFill, transformBox: "fill-box", transformOrigin: "50% 100%", transform: `rotate(${(leafTilt * dx) / 34}deg)`, transition: "transform 1.2s ease, stroke 1.2s ease" } as React.CSSProperties}
-            />
-          ))}
-        </g>
-        <polygon points="128,820 192,820 184,868 136,868" fill="url(#os-pot)" />
-        <rect x="126" y="816" width="68" height="8" rx="2" fill="#dfe3e9" />
-      </g>
+      {/* tombstone awards, standing on the desk at the left */}
+      {awards.slice(0, 3).map((award, k) => {
+        const x = 40 + k * 78;
+        const lines = award.split(" ");
+        return (
+          <g key={award}>
+            <ellipse cx={x + 35 + sh.dx * 0.4} cy={870 + sh.dy * 0.3} rx={36} ry={5} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
+            {/* base */}
+            <rect x={x} y={858} width={70} height={10} rx={2} fill="url(#os-plate)" />
+            <rect x={x} y={858} width={70} height={2} fill="#ffffff" fillOpacity="0.35" />
+            {/* acrylic block */}
+            <polygon points={`${x + 6},${858} ${x + 64},${858} ${x + 61},${800} ${x + 9},${800}`} fill="url(#os-lucite)" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1.2" />
+            <polygon points={`${x + 9},${800} ${x + 61},${800} ${x + 59},${796} ${x + 11},${796}`} fill="#ffffff" fillOpacity="0.7" />
+            <line x1={x + 12} y1={804} x2={x + 10} y2={852} stroke="#ffffff" strokeOpacity="0.9" strokeWidth="1.5" />
+            {/* engraving */}
+            <text x={x + 35} y={814} textAnchor="middle" fontSize="5.5" letterSpacing="1" fill="#012169" fillOpacity="0.75">
+              GOTHIC CAPITAL
+            </text>
+            {lines.map((w, li) => (
+              <text key={li} x={x + 35} y={826 + li * 9.5} textAnchor="middle" fontSize={lines.length > 1 ? 7.5 : 8.5} fontWeight="700" letterSpacing="0.5" fill="#012169">
+                {w.toUpperCase()}
+              </text>
+            ))}
+            <text x={x + 35} y={848} textAnchor="middle" fontSize="5.5" fill="#00539b">
+              ★
+            </text>
+          </g>
+        );
+      })}
 
       {/* nameplate, left of the keyboard */}
       <g>
-        <rect x={296 + sh.dx * 0.3} y={856 + sh.dy * 0.3} width="170" height="8" fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
-        <rect x="294" y="818" width="172" height="42" rx="3" fill="url(#os-plate)" />
-        <rect x="294" y="818" width="172" height="42" rx="3" fill="none" stroke="#c9d1db" strokeWidth="1.5" />
-        <rect x="294" y="858" width="172" height="4" fill="#9aa3b1" />
-        <text x="380" y="845" textAnchor="middle" fontSize={title.length > 14 ? 13 : 16} fontWeight="600" letterSpacing="1.5" fill="#ffffff" style={{ fontVariant: "small-caps" }}>
-          {title}
-        </text>
-      </g>
-
-      {/* Training Complete badge, left of the nameplate */}
-      {badge && (
-        <g>
-          <ellipse cx={246 + sh.dx * 0.3} cy={866 + sh.dy * 0.3} rx={20} ry={4} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
-          <polygon points="236,848 256,848 262,866 230,866" fill="#00539b" />
-          <circle cx="246" cy="836" r="19" fill="#012169" stroke="#c9d1db" strokeWidth="2" />
-          <circle cx="246" cy="836" r="14" fill="none" stroke="#1b6fc2" strokeWidth="1.5" />
-          <path d="M238 836 L244 842 L255 830" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          <text x="246" y="878" textAnchor="middle" fontSize="7" fontWeight="600" letterSpacing="1" fill="#012169">
-            TRAINED
+        <rect x={282 + sh.dx * 0.3} y={856 + sh.dy * 0.3} width="190" height="8" fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
+        <rect x="280" y="816" width="192" height="44" rx="3" fill="url(#os-plate)" />
+        <rect x="280" y="816" width="192" height="44" rx="3" fill="none" stroke="#c9d1db" strokeWidth="1.5" />
+        <rect x="280" y="858" width="192" height="4" fill="#9aa3b1" />
+        {name ? (
+          <>
+            <text x="376" y="837" textAnchor="middle" fontSize={name.length > 16 ? 11 : name.length > 11 ? 13 : 15} fontWeight="700" letterSpacing="0.5" fill="#ffffff">
+              {name}
+            </text>
+            <text x="376" y="851" textAnchor="middle" fontSize="8" fontWeight="600" letterSpacing="1.6" fill="#c9d1db">
+              {title.toUpperCase()}
+            </text>
+          </>
+        ) : (
+          <text x="376" y="843" textAnchor="middle" fontSize={title.length > 14 ? 13 : 16} fontWeight="600" letterSpacing="1.5" fill="#ffffff" style={{ fontVariant: "small-caps" }}>
+            {title}
           </text>
-        </g>
-      )}
+        )}
+      </g>
 
       {/* coffee cup, right of the keyboard: ~ a tenth of a monitor tall */}
       <g>

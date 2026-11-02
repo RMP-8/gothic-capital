@@ -8,22 +8,22 @@ import { Button } from "@/components/ui";
 
 export type MobileTab = "chart" | "trade" | "inbox" | "lesson" | "list";
 
-export function MobileHeader({ state, badge, label }: { state: GameState; badge: boolean; label?: string }) {
+export function MobileHeader({ state, name, awards, label }: { state: GameState; name?: string; awards: string[]; label?: string }) {
   const change = weekChange(state);
   return (
     <header className="sticky top-0 z-20 border-b border-white/10 bg-[#071537]/95 px-4 pb-2 pt-3 pr-16 backdrop-blur">
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-royal-bright">Gothic Capital</span>
         {label && <span className="rounded-full border border-white/30 bg-royal px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em]">{label}</span>}
-        {badge && (
-          <span className="flex items-center gap-1 rounded-full border border-gain/50 bg-gain/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-white">
-            <span className="flex h-3 w-3 items-center justify-center rounded-full bg-gain text-[8px]">✓</span> Trained
+        {awards.map((a) => (
+          <span key={a} className="rounded-sm border border-white/40 bg-white/10 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white" title={`${a} award`}>
+            🏆 {a}
           </span>
-        )}
+        ))}
       </div>
       <div className="mt-0.5 flex items-baseline justify-between">
         <span className="text-[15px] font-semibold">
-          {state.ticker} <span className="text-[12px] font-normal text-silver/70">· {state.title}</span>
+          {name ? name : state.ticker} <span className="text-[12px] font-normal text-silver/70">· {state.title}{name ? ` · ${state.ticker}` : ""}</span>
         </span>
         <span className="tabular text-[11px] text-silver/70">
           {longDate(shownDate(state, state.data.prices[state.week].date))} · wk {state.week + 1}/{totalWeeks(state)}

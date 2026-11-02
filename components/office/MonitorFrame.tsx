@@ -23,7 +23,7 @@ export default function MonitorFrame({
 }) {
   const bezel = 6;
   const chin = 4;
-  const neck = 22;
+  const neck = 26;
   return (
     <div className="absolute" style={{ left: x - bezel, top: y - bezel, width: w + bezel * 2, height: h + bezel * 2 + chin + neck + 10 }}>
       {/* shadow on the wall */}
@@ -37,9 +37,13 @@ export default function MonitorFrame({
           transition: "all 1s ease",
         }}
       />
-      {/* stand */}
-      <div className="absolute left-1/2 -translate-x-1/2" style={{ top: h + bezel * 2 + chin - 1, width: 46, height: neck + 2, background: "linear-gradient(90deg, #1f2328, #3a3f46 50%, #1f2328)" }} />
-      <div className="absolute left-1/2 -translate-x-1/2 rounded-[3px]" style={{ top: h + bezel * 2 + chin + neck, width: w * 0.34, height: 10, background: "linear-gradient(#3a3f46, #1f2328)" }} />
+      {/* stand: neck, then a flat elliptical base resting on the desk with a contact shadow */}
+      <div className="absolute left-1/2 -translate-x-1/2" style={{ top: h + bezel * 2 + chin - 1, width: 44, height: neck + 2, background: "linear-gradient(90deg, #1f2328, #4a5058 50%, #1f2328)" }} />
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-[50%]"
+        style={{ top: h + bezel * 2 + chin + neck + 2, width: w * 0.44, height: 16, background: "radial-gradient(ellipse at center, rgba(40,32,18,0.4), rgba(40,32,18,0) 70%)", transform: `translate(calc(-50% + ${shadow.dx * 0.3}px), ${shadow.dy * 0.2}px)`, transition: "transform 1s ease" }}
+      />
+      <div className="absolute left-1/2 -translate-x-1/2 rounded-[50%]" style={{ top: h + bezel * 2 + chin + neck - 4, width: w * 0.38, height: 14, background: "linear-gradient(#4a5058, #22262c)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)" }} />
       {/* bezel */}
       <div data-spot={spot} className="absolute inset-x-0 top-0 rounded-[6px] bg-[#111418]" style={{ height: h + bezel * 2 + chin, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }} />
       {/* screen */}

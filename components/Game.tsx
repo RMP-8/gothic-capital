@@ -10,7 +10,7 @@ import { PRACTICE_STEPS, phoneWording, practiceData, type ActionKind, type Spot 
 import { nextTip } from "@/lib/tips";
 import { MONITOR } from "@/lib/layout";
 import Stage from "@/components/Stage";
-import OfficeScene, { MOODS, type PlantMood, type TimeOfDay } from "@/components/office/OfficeScene";
+import OfficeScene, { MOODS, type TimeOfDay } from "@/components/office/OfficeScene";
 import MonitorFrame from "@/components/office/MonitorFrame";
 import MainMonitor from "@/components/monitors/MainMonitor";
 import SideMonitor from "@/components/monitors/SideMonitor";
@@ -46,6 +46,7 @@ type Modal =
 
 const TIMES: TimeOfDay[] = ["morning", "midday", "afternoon"];
 const LEVELS_KEY = "gothic-capital-levels";
+const NAME_KEY = "gothic-capital-name";
 const NO_LEVELS: LevelsDone = { training: false, practice: false, real: false };
 
 function readLevels(): LevelsDone {
@@ -74,6 +75,7 @@ export default function Game() {
   const [phase, setPhase] = useState<Phase>("start");
   const [game, setGame] = useState<GameState | null>(null);
   const [ticker, setTicker] = useState("SPY");
+  const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal>(null);
@@ -149,11 +151,10 @@ export default function Game() {
   }, [setGameAndPhase]);
 
   const markDone = useCallback((level: Level) => {
-    setLevelsDone((prev) => {
-      const next = { ...prev, [level]: true };
-      writeLevels(next);
-      return next;
-    });
+    // Storage is the source of truth, so progress from earlier visits is never overwritten.
+    const next = { ...readLevels(), [level]: true };
+    writeLevels(next);
+    setLevelsDone(next);
   }, []);
 
   const startTraining = useCallback(() => {
@@ -169,14 +170,33 @@ export default function Game() {
     const full = fullData.current;
     if (!full) return;
     setLevelsDone(readLevels());
+    setPlayerName((n) => {
+      if (n) return n;
+      try {
+        return window.localStorage.getItem(NAME_KEY) ?? "";
+      } catch {
+        return "";
+      }
+    });
     setGameAndPhase(newGame(full, todayIso()), "levels");
   }, [setGameAndPhase]);
 
   const load = useCallback(
-    async (t: string, then: "levels" | "practice" | "training" | "real") => {
+    async (t: string, then: "levels" | "practice" | "training" | "real", name?: string) => {
       setLoading(true);
       setLoadError(null);
       setTicker(t);
+      if (name !== undefined) {
+        try {
+          // A blank field keeps the name from the last visit.
+          const finalName = name || window.localStorage.getItem(NAME_KEY) || "";
+          setPlayerName(finalName);
+          if (name) window.localStorage.setItem(NAME_KEY, name);
+        } catch {
+          setPlayerName(name);
+        }
+      }
+      setLevelsDone(readLevels());
       try {
         const res = await fetch(`/api/prices?ticker=${encodeURIComponent(t)}`);
         const body = await res.json();
@@ -311,11 +331,6 @@ export default function Game() {
   /* ---------- derived ---------- */
   const timeOfDay: TimeOfDay = TIMES[(game?.week ?? 0) % 3];
   const shadow = MOODS[timeOfDay].shadow;
-  let plantMood: PlantMood = "neutral";
-  if (game) {
-    const ratio = game.history[game.week] / game.bnhHistory[game.week] - 1;
-    plantMood = ratio > 0.01 ? "perky" : ratio < -0.01 ? "droopy" : "neutral";
-  }
   const practicing = phase === "practice" && !!game;
   const coachStep = PRACTICE_STEPS[Math.min(stepIdx, PRACTICE_STEPS.length - 1)];
   // Once the right tab is open, point at the preview button instead of the tab.
@@ -324,6 +339,11 @@ export default function Game() {
   if (coachStep.id === "buy-put" && ticketTab === "put") coachSpot = "preview";
   const tip = isPhone ? phoneWording(nextTip(phase, game)) : nextTip(phase, game);
   const training = phase === "training" && !!game;
+  // Lucite "tombstone" awards on the desk: one for Training Day, one per promotion.
+  const awards: string[] = [];
+  if (levelsDone.training) awards.push("Training Day");
+  if (game && game.title !== "Junior PM") awards.push("Portfolio Manager");
+  if (game && game.title === "Senior PM") awards.push("Senior PM");
   const lesson = LESSONS[Math.min(lessonIdx, LESSON_COUNT - 1)];
   const finishTraining = () => {
     markDone("training");
@@ -428,7 +448,7 @@ export default function Game() {
       <div className="min-h-screen bg-[#071537] text-white">
         {showDesk && game && (
           <>
-            <MobileHeader state={game} badge={levelsDone.training} label={practicing ? "Practice" : training ? "Level 1" : undefined} />
+            <MobileHeader state={game} name={playerName} awards={awards} label={practicing ? "Practice" : training ? "Level 1" : undefined} />
             <MobileTabs tabs={tabs} value={tab} onChange={setMobileTab} badges={{ inbox: game.messages.length }} />
             <div className={`relative ${practicing ? "h-[calc(100dvh-330px)]" : "h-[calc(100dvh-200px)]"} min-h-[380px]`}>
               {tab === "chart" && <MainMonitor state={game} compact />}
@@ -515,7 +535,7 @@ export default function Game() {
             onSkip={startReal}
           />
         )}
-        {phase === "start" && <StartScreen onStart={(t) => load(t, "levels")} loading={loading} error={loadError} initialTicker={ticker} />}
+        {phase === "start" && <StartScreen onStart={(t, n) => load(t, "levels", n)} loading={loading} error={loadError} initialTicker={ticker} initialName={playerName} />}
         {phase === "levels" && (
           <LevelSelect
             ticker={ticker}
@@ -561,7 +581,7 @@ export default function Game() {
 
   return (
     <Stage>
-      <OfficeScene timeOfDay={timeOfDay} plantMood={plantMood} coffeeLevel={coffee} title={game?.title ?? "Junior PM"} badge={levelsDone.training} />
+      <OfficeScene timeOfDay={timeOfDay} coffeeLevel={coffee} title={game?.title ?? "Junior PM"} name={playerName} awards={awards} />
       {training && game && (
         <>
           <MonitorFrame {...MONITOR.inbox} shadow={shadow} spot="inbox">
@@ -672,7 +692,7 @@ export default function Game() {
         </>
       )}
 
-      {phase === "start" && <StartScreen onStart={(t) => load(t, "levels")} loading={loading} error={loadError} initialTicker={ticker} />}
+      {phase === "start" && <StartScreen onStart={(t, n) => load(t, "levels", n)} loading={loading} error={loadError} initialTicker={ticker} initialName={playerName} />}
       {phase === "levels" && (
         <LevelSelect
           ticker={ticker}
