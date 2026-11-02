@@ -15,11 +15,13 @@ export const DEFINITIONS: Definition[] = [
   { term: "IRR", text: "The yearly return on the money you started with." },
 ];
 
-export type Phase = "start" | "practice" | "playing" | "review";
+export type Phase = "start" | "levels" | "training" | "practice" | "playing" | "review";
 
 /** One or two sentences about what to do right now. */
 export function nextTip(phase: Phase, g: GameState | null): string {
   if (phase === "start" || !g) return "Pick a ticker (SPY is a good default) and take the job. You'll get the chance to do a practice round first.";
+  if (phase === "levels") return "Pick a level. Level 1 teaches the terms, Level 2 is a guided practice, Level 3 is the real five-year game.";
+  if (phase === "training") return "Read the lesson on the middle monitor, try the slider where there is one, then answer the quick question. The list on the right lets you jump around.";
   if (phase === "practice") return "Follow Eleanor's card at the top of the screen. Each step highlights the exact thing to click.";
   if (phase === "review") return "Compare your three metrics with buy-and-hold, then play again or try another ticker.";
   if (g.status === "finished") return "Five years are done. Press Go to your review on the keyboard.";

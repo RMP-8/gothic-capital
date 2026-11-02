@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { DEFINITIONS } from "@/lib/tips";
+import { GLOSSARY } from "@/lib/lessons";
 import { Button } from "@/components/ui";
 
 export function HelpButton({ onClick }: { onClick: () => void }) {
@@ -24,12 +24,14 @@ export default function HelpPanel({
   tip,
   onClose,
   onReplayPractice,
+  onTraining,
   onAskFounder,
 }: {
   open: boolean;
   tip: string;
   onClose: () => void;
   onReplayPractice: () => void;
+  onTraining: () => void;
   onAskFounder: () => void;
 }) {
   return (
@@ -62,19 +64,22 @@ export default function HelpPanel({
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-royal-bright">What to do next</div>
               <p className="mt-1 text-[13.5px] leading-snug text-white">{tip}</p>
             </div>
-            <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-silver/60">Quick definitions</div>
+            <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-silver/60">Glossary</div>
             <ul className="monitor-scroll mt-1.5 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
-              {DEFINITIONS.map((d) => (
+              {GLOSSARY.map((d) => (
                 <li key={d.term} className="text-[12.5px] leading-snug text-silver">
                   <span className="font-semibold text-white">{d.term}.</span> {d.text}
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex gap-2">
-              <Button variant="ghost" className="flex-1" onClick={onReplayPractice}>
-                Replay practice round
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button variant="ghost" onClick={onTraining}>
+                Training Day
               </Button>
-              <Button className="flex-1" onClick={onAskFounder}>
+              <Button variant="ghost" onClick={onReplayPractice}>
+                Replay practice
+              </Button>
+              <Button className="col-span-2" onClick={onAskFounder}>
                 Ask the founder
               </Button>
             </div>

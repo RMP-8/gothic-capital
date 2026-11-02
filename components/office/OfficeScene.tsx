@@ -10,6 +10,8 @@ export interface OfficeSceneProps {
   coffeeLevel: number;
   /** text on the desk nameplate, e.g. "Junior PM" */
   title: string;
+  /** show the "Training Complete" badge beside the nameplate */
+  badge?: boolean;
 }
 
 /* ---------- geometry (1600 x 900 stage) ---------- */
@@ -250,7 +252,7 @@ export function Skyline({ mood: m, bottom, idPrefix }: { mood: Mood; bottom: num
   );
 }
 
-export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title }: OfficeSceneProps) {
+export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title, badge }: OfficeSceneProps) {
   const m = MOODS[timeOfDay];
   const level = Math.max(0, Math.min(1, coffeeLevel));
   const leafTilt = plantMood === "perky" ? -14 : plantMood === "droopy" ? 22 : 0;
@@ -347,6 +349,20 @@ export function OfficeScene({ timeOfDay, plantMood, coffeeLevel, title }: Office
           {title}
         </text>
       </g>
+
+      {/* Training Complete badge, left of the nameplate */}
+      {badge && (
+        <g>
+          <ellipse cx={246 + sh.dx * 0.3} cy={866 + sh.dy * 0.3} rx={20} ry={4} fill="#4a3b22" style={{ opacity: sh.opacity, ...T1 }} filter="url(#os-softer)" />
+          <polygon points="236,848 256,848 262,866 230,866" fill="#00539b" />
+          <circle cx="246" cy="836" r="19" fill="#012169" stroke="#c9d1db" strokeWidth="2" />
+          <circle cx="246" cy="836" r="14" fill="none" stroke="#1b6fc2" strokeWidth="1.5" />
+          <path d="M238 836 L244 842 L255 830" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <text x="246" y="878" textAnchor="middle" fontSize="7" fontWeight="600" letterSpacing="1" fill="#012169">
+            TRAINED
+          </text>
+        </g>
+      )}
 
       {/* coffee cup, right of the keyboard: ~ a tenth of a monitor tall */}
       <g>

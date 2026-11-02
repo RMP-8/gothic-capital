@@ -22,19 +22,44 @@ import FounderModal from "@/components/FounderModal";
 import BonusPopup from "@/components/BonusPopup";
 import StartScreen from "@/components/StartScreen";
 import ReviewScreen from "@/components/ReviewScreen";
-import ChoiceModal from "@/components/ChoiceModal";
 import PracticeCoach from "@/components/PracticeCoach";
 import HelpPanel, { HelpButton } from "@/components/HelpPanel";
+import LevelSelect, { type Level, type LevelsDone } from "@/components/LevelSelect";
+import LessonCard from "@/components/training/LessonCard";
+import LessonList from "@/components/training/LessonList";
+import TrainingRecap from "@/components/training/TrainingRecap";
+import { LESSONS, LESSON_COUNT } from "@/lib/lessons";
+import { Button, Card, FounderAvatar, Overlay } from "@/components/ui";
+import { FOUNDER_NAME } from "@/lib/messages";
 
-type Phase = "start" | "practice" | "playing" | "review";
+type Phase = "start" | "levels" | "training" | "practice" | "playing" | "review";
 type Modal =
-  | { kind: "choice" }
+  | { kind: "trainingWelcome" }
+  | { kind: "trainingRecap" }
   | { kind: "faq" }
   | { kind: "bonus" }
   | { kind: "preview"; quote: OptionQuote; order: OptionOrder }
   | null;
 
 const TIMES: TimeOfDay[] = ["morning", "midday", "afternoon"];
+const LEVELS_KEY = "gothic-capital-levels";
+const NO_LEVELS: LevelsDone = { training: false, practice: false, real: false };
+
+function readLevels(): LevelsDone {
+  try {
+    const raw = window.localStorage.getItem(LEVELS_KEY);
+    return raw ? { ...NO_LEVELS, ...(JSON.parse(raw) as Partial<LevelsDone>) } : NO_LEVELS;
+  } catch {
+    return NO_LEVELS;
+  }
+}
+function writeLevels(v: LevelsDone) {
+  try {
+    window.localStorage.setItem(LEVELS_KEY, JSON.stringify(v));
+  } catch {
+    /* private mode etc. */
+  }
+}
 
 /** Today's date in the player's local time zone, as YYYY-MM-DD. */
 function todayIso(): string {
@@ -63,6 +88,10 @@ export default function Game() {
   const [before, setBefore] = useState<GameState | null>(null);
   const [nudge, setNudge] = useState<string | null>(null);
   const [ticketTab, setTicketTab] = useState<"shares" | "call" | "put">("shares");
+  // levels + training day
+  const [levelsDone, setLevelsDone] = useState<LevelsDone>(NO_LEVELS);
+  const [lessonIdx, setLessonIdx] = useState(0);
+  const [lessonPassed, setLessonPassed] = useState<boolean[]>(() => Array(LESSON_COUNT).fill(false));
 
   // Refs let event handlers and the auto-play timer see the latest state without re-subscribing.
   const gameRef = useRef<GameState | null>(null);
@@ -113,8 +142,32 @@ export default function Game() {
     setGameAndPhase(newGame(full, todayIso()), "playing");
   }, [setGameAndPhase]);
 
+  const markDone = useCallback((level: Level) => {
+    setLevelsDone((prev) => {
+      const next = { ...prev, [level]: true };
+      writeLevels(next);
+      return next;
+    });
+  }, []);
+
+  const startTraining = useCallback(() => {
+    const full = fullData.current;
+    if (!full) return;
+    setLessonIdx(0);
+    setLessonPassed(Array(LESSON_COUNT).fill(false));
+    setGameAndPhase(newGame(full, todayIso()), "training");
+    setModal({ kind: "trainingWelcome" });
+  }, [setGameAndPhase]);
+
+  const showLevels = useCallback(() => {
+    const full = fullData.current;
+    if (!full) return;
+    setLevelsDone(readLevels());
+    setGameAndPhase(newGame(full, todayIso()), "levels");
+  }, [setGameAndPhase]);
+
   const load = useCallback(
-    async (t: string, then: "choice" | "practice" | "real") => {
+    async (t: string, then: "levels" | "practice" | "training" | "real") => {
       setLoading(true);
       setLoadError(null);
       setTicker(t);
@@ -124,17 +177,16 @@ export default function Game() {
         if (!res.ok) throw new Error(body.error || "Couldn't load prices.");
         fullData.current = body as MarketData;
         if (then === "practice") startPractice();
-        else {
-          startReal();
-          if (then === "choice") setModal({ kind: "choice" });
-        }
+        else if (then === "training") startTraining();
+        else if (then === "real") startReal();
+        else showLevels();
       } catch (e) {
         setLoadError(e instanceof Error ? e.message : String(e));
       } finally {
         setLoading(false);
       }
     },
-    [startPractice, startReal],
+    [startPractice, startReal, startTraining, showLevels],
   );
 
   /* ---------- actions ---------- */
@@ -176,7 +228,10 @@ export default function Game() {
           setToast("An option expired and settled in cash. Auto-play paused.");
         }
       }
-      if (next.status === "finished") setAutoplay(false);
+      if (next.status === "finished") {
+        setAutoplay(false);
+        if (!practicing) markDone("real");
+      }
       next = clearPause(next);
       gameRef.current = next;
       setGame(next);
@@ -189,7 +244,7 @@ export default function Game() {
       }
       return true;
     },
-    [refillCoffee],
+    [refillCoffee, markDone],
   );
 
   const step = useCallback(() => apply((g) => nextWeek(g), "nextWeek"), [apply]);
@@ -198,6 +253,7 @@ export default function Game() {
   const coachContinue = () => {
     const s = PRACTICE_STEPS[stepRef.current];
     if (s.id === "wrap" || stepRef.current >= PRACTICE_STEPS.length - 1) {
+      markDone("practice");
       startReal();
       return;
     }
@@ -234,6 +290,11 @@ export default function Game() {
     if (fullData.current) startPractice();
     else void load(ticker, "practice");
   };
+  const goTraining = () => {
+    setHelpOpen(false);
+    if (fullData.current) startTraining();
+    else void load(ticker, "training");
+  };
   const askFounder = () => {
     setHelpOpen(false);
     setAutoplay(false);
@@ -255,11 +316,17 @@ export default function Game() {
   if (coachStep.id === "buy-call" && ticketTab === "call") coachSpot = "preview";
   if (coachStep.id === "buy-put" && ticketTab === "put") coachSpot = "preview";
   const tip = nextTip(phase, game);
+  const training = phase === "training" && !!game;
+  const lesson = LESSONS[Math.min(lessonIdx, LESSON_COUNT - 1)];
+  const finishTraining = () => {
+    markDone("training");
+    setModal({ kind: "trainingRecap" });
+  };
 
   const helpUi = (
     <>
       <HelpButton onClick={openHelp} />
-      <HelpPanel open={helpOpen} tip={tip} onClose={() => setHelpOpen(false)} onReplayPractice={replayPractice} onAskFounder={askFounder} />
+      <HelpPanel open={helpOpen} tip={tip} onClose={() => setHelpOpen(false)} onReplayPractice={replayPractice} onTraining={goTraining} onAskFounder={askFounder} />
       <AnimatePresence>{modal?.kind === "faq" && <FounderModal key="faq" mode="faq" onClose={() => setModal(null)} />}</AnimatePresence>
     </>
   );
@@ -285,8 +352,46 @@ export default function Game() {
 
   return (
     <Stage>
-      <OfficeScene timeOfDay={timeOfDay} plantMood={plantMood} coffeeLevel={coffee} title={game?.title ?? "Junior PM"} />
-      {game && (phase === "playing" || phase === "practice") && (
+      <OfficeScene timeOfDay={timeOfDay} plantMood={plantMood} coffeeLevel={coffee} title={game?.title ?? "Junior PM"} badge={levelsDone.training} />
+      {training && game && (
+        <>
+          <MonitorFrame {...MONITOR.inbox} shadow={shadow} spot="inbox">
+            <InboxMonitor messages={game.messages} dateOffset={game.dateOffset} />
+          </MonitorFrame>
+          <MonitorFrame {...MONITOR.ticket} shadow={shadow} spot="ticket">
+            <LessonList current={lessonIdx} passed={lessonPassed} onPick={setLessonIdx} />
+          </MonitorFrame>
+          <MonitorFrame {...MONITOR.main} shadow={shadow} spot="chart">
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              index={lessonIdx}
+              passed={lessonPassed[lessonIdx]}
+              onPassed={() => setLessonPassed((p) => p.map((v, i) => (i === lessonIdx ? true : v)))}
+              onNext={() => (lessonIdx >= LESSON_COUNT - 1 ? finishTraining() : setLessonIdx(lessonIdx + 1))}
+              onBack={() => setLessonIdx(Math.max(0, lessonIdx - 1))}
+            />
+          </MonitorFrame>
+          <div
+            className="absolute flex items-center gap-3 rounded-lg border border-white/10 bg-[#071537]/95 px-4 text-white shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+            style={{ left: 480, top: 806, width: 640, height: 48 }}
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-royal-bright">Level 1 · Training Day</span>
+            <span className="text-[12px] text-silver">
+              {lessonPassed.filter(Boolean).length} of {LESSON_COUNT} questions answered
+            </span>
+            <div className="ml-auto flex gap-2">
+              <Button variant="ghost" className="py-1" onClick={showLevels}>
+                Back to levels
+              </Button>
+              <Button variant="ghost" className="py-1" onClick={startPractice}>
+                Skip to Level 2
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+      {game && (phase === "playing" || phase === "practice" || phase === "levels") && (
         <>
           <MonitorFrame {...MONITOR.inbox} shadow={shadow} spot="inbox">
             <InboxMonitor messages={game.messages} dateOffset={game.dateOffset} />
@@ -358,10 +463,55 @@ export default function Game() {
         </>
       )}
 
-      {phase === "start" && <StartScreen onStart={(t) => load(t, "choice")} loading={loading} error={loadError} initialTicker={ticker} />}
+      {phase === "start" && <StartScreen onStart={(t) => load(t, "levels")} loading={loading} error={loadError} initialTicker={ticker} />}
+      {phase === "levels" && (
+        <LevelSelect
+          ticker={ticker}
+          done={levelsDone}
+          onPick={(l) => {
+            if (l === "training") startTraining();
+            else if (l === "practice") startPractice();
+            else startReal();
+          }}
+        />
+      )}
 
       <AnimatePresence>
-        {modal?.kind === "choice" && <ChoiceModal key="choice" ticker={ticker} onPractice={startPractice} onReal={() => setModal(null)} />}
+        {modal?.kind === "trainingWelcome" && (
+          <Overlay key="tw">
+            <Card className="w-[540px] p-7">
+              <div className="flex items-center gap-3">
+                <FounderAvatar size={44} />
+                <div>
+                  <div className="text-[14px] font-semibold">{FOUNDER_NAME}</div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-silver/60">Founder, Gothic Capital</div>
+                </div>
+              </div>
+              <h2 className="mt-5 text-[22px] font-semibold">Welcome to your first day at Gothic Capital.</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-silver">
+                Before I hand you the fund, we&apos;ll cover the basics: fifteen short lessons on the middle monitor, each with one quick question. Take your time; nobody here was born knowing this.
+              </p>
+              <div className="mt-6 flex justify-end">
+                <Button className="px-5" onClick={() => setModal(null)}>
+                  Let&apos;s start
+                </Button>
+              </div>
+            </Card>
+          </Overlay>
+        )}
+        {modal?.kind === "trainingRecap" && (
+          <TrainingRecap
+            key="recap"
+            onPractice={() => {
+              setModal(null);
+              startPractice();
+            }}
+            onLevels={() => {
+              setModal(null);
+              showLevels();
+            }}
+          />
+        )}
         {modal?.kind === "bonus" && game && game.bonuses.length > 0 && (
           <BonusPopup key="bonus" bonus={game.bonuses[game.bonuses.length - 1]} title={game.title} onClose={() => setModal(null)} />
         )}
