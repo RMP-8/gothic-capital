@@ -19,7 +19,11 @@ export const dynamic = "force-dynamic";
 const spyBackup = spySnapshot as TickerSnapshot;
 const irxBackup = irxSnapshot as RateSnapshot;
 
-/** Small in-memory cache so repeated plays in one server process don't re-hit Yahoo. */
+/**
+ * Small in-memory cache so repeated plays in one server process don't re-hit Yahoo.
+ * Entries are refreshed after an hour, but the last successful fetch is kept indefinitely
+ * as the first fallback if Yahoo is unreachable later; the repo snapshot is the last resort.
+ */
 const cache = new Map<string, { at: number; data: MarketData }>();
 const TTL_MS = 60 * 60 * 1000;
 
@@ -51,6 +55,9 @@ export async function GET(req: Request) {
   let data: MarketData;
   if (tickerRes.status === "fulfilled") {
     data = assemble(ticker, tickerRes.value, rates, "live", new Date().toISOString());
+  } else if (cache.get(ticker) ?? cache.get(raw)) {
+    // Yahoo failed, but this server fetched the ticker successfully earlier today: reuse it.
+    data = (cache.get(ticker) ?? cache.get(raw))!.data;
   } else if (ticker === "SPY") {
     data = assemble("SPY", spyBackup, rates, "snapshot", spyBackup.fetchedAt);
   } else {
