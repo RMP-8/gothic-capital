@@ -6,7 +6,7 @@ import type { GameState, MarketData, OptionOrder, OptionQuote } from "@/lib/type
 import { buyOption, buyShares, clearPause, nextWeek, quoteOption, sellOption, sellShares, skipWeeks, newGame } from "@/lib/engine";
 import { computeStats } from "@/lib/metrics";
 import { playChime, playClick, playFanfare } from "@/lib/sound";
-import { PRACTICE_STEPS, practiceData, type ActionKind, type Spot } from "@/lib/practice";
+import { PRACTICE_STEPS, phoneWording, practiceData, type ActionKind, type Spot } from "@/lib/practice";
 import { nextTip } from "@/lib/tips";
 import { MONITOR } from "@/lib/layout";
 import Stage from "@/components/Stage";
@@ -24,6 +24,9 @@ import StartScreen from "@/components/StartScreen";
 import ReviewScreen from "@/components/ReviewScreen";
 import PracticeCoach from "@/components/PracticeCoach";
 import HelpPanel, { HelpButton } from "@/components/HelpPanel";
+import { useIsPhone } from "@/lib/useIsPhone";
+import { MobileBar, MobileHeader, MobileTabs, type MobileTab } from "@/components/mobile/MobileShell";
+import MobileCoach from "@/components/mobile/MobileCoach";
 import LevelSelect, { type Level, type LevelsDone } from "@/components/LevelSelect";
 import LessonCard from "@/components/training/LessonCard";
 import LessonList from "@/components/training/LessonList";
@@ -92,6 +95,9 @@ export default function Game() {
   const [levelsDone, setLevelsDone] = useState<LevelsDone>(NO_LEVELS);
   const [lessonIdx, setLessonIdx] = useState(0);
   const [lessonPassed, setLessonPassed] = useState<boolean[]>(() => Array(LESSON_COUNT).fill(false));
+  // phone layout
+  const isPhone = useIsPhone();
+  const [mobileTab, setMobileTab] = useState<MobileTab>("chart");
 
   // Refs let event handlers and the auto-play timer see the latest state without re-subscribing.
   const gameRef = useRef<GameState | null>(null);
@@ -316,7 +322,7 @@ export default function Game() {
   let coachSpot: Spot = coachStep.spot;
   if (coachStep.id === "buy-call" && ticketTab === "call") coachSpot = "preview";
   if (coachStep.id === "buy-put" && ticketTab === "put") coachSpot = "preview";
-  const tip = nextTip(phase, game);
+  const tip = isPhone ? phoneWording(nextTip(phase, game)) : nextTip(phase, game);
   const training = phase === "training" && !!game;
   const lesson = LESSONS[Math.min(lessonIdx, LESSON_COUNT - 1)];
   const finishTraining = () => {
@@ -331,6 +337,208 @@ export default function Game() {
       <AnimatePresence>{modal?.kind === "faq" && <FounderModal key="faq" mode="faq" onClose={() => setModal(null)} />}</AnimatePresence>
     </>
   );
+
+  const modals = (
+  <AnimatePresence>
+    {modal?.kind === "trainingWelcome" && (
+      <Overlay key="tw">
+        <Card className="w-[540px] p-7">
+          <div className="flex items-center gap-3">
+            <FounderAvatar size={44} />
+            <div>
+              <div className="text-[14px] font-semibold">{FOUNDER_NAME}</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-silver/60">Founder, Gothic Capital</div>
+            </div>
+          </div>
+          <h2 className="mt-5 text-[22px] font-semibold">Welcome to your first day at Gothic Capital.</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-silver">
+            Before I hand you the fund, we&apos;ll cover the basics: fifteen short lessons on the middle monitor, each with one quick question. Take your time; nobody here was born knowing this.
+          </p>
+          <div className="mt-6 flex justify-end">
+            <Button className="px-5" onClick={() => setModal(null)}>
+              Let&apos;s start
+            </Button>
+          </div>
+        </Card>
+      </Overlay>
+    )}
+    {modal?.kind === "trainingRecap" && (
+      <TrainingRecap
+        key="recap"
+        onPractice={() => {
+          setModal(null);
+          startPractice();
+        }}
+        onLevels={() => {
+          setModal(null);
+          showLevels();
+        }}
+      />
+    )}
+    {modal?.kind === "bonus" && game && game.bonuses.length > 0 && (
+      <BonusPopup key="bonus" bonus={game.bonuses[game.bonuses.length - 1]} title={game.title} onClose={() => setModal(null)} />
+    )}
+    {modal?.kind === "preview" && (
+      <OptionPreview
+        key="preview"
+        quote={modal.quote}
+        onCancel={() => setModal(null)}
+        onConfirm={() => {
+          apply((g) => buyOption(g, modal.order), modal.order.type === "call" ? "buyCall" : "buyPut", true);
+          setModal(null);
+        }}
+      />
+    )}
+  </AnimatePresence>
+  );
+
+  /* ---------- phone layout ---------- */
+  if (isPhone) {
+    if (phase === "review" && game) {
+      return (
+        <>
+          <ReviewScreen
+            compact
+            state={game}
+            onPlayAgain={startReal}
+            onNewTicker={() => {
+              setPhase("start");
+              phaseRef.current = "start";
+              setGame(null);
+              gameRef.current = null;
+              fullData.current = null;
+            }}
+          />
+          {helpUi}
+        </>
+      );
+    }
+    // In the practice round, follow the coach to the tab that holds the target.
+    const spotTab: Partial<Record<NonNullable<Spot>, MobileTab>> = {
+      chart: "chart", strip: "chart", ticket: "trade", buy: "trade", sell: "trade", call: "trade", put: "trade", preview: "trade", positions: "trade", inbox: "inbox",
+    };
+    const forced = practicing && coachSpot ? spotTab[coachSpot] : undefined;
+    const tab: MobileTab = training ? (mobileTab === "chart" || mobileTab === "trade" ? "lesson" : mobileTab) : forced ?? (mobileTab === "lesson" || mobileTab === "list" ? "chart" : mobileTab);
+    const tabs = training
+      ? [{ id: "lesson" as const, label: "Lesson" }, { id: "list" as const, label: "Lessons" }, { id: "inbox" as const, label: "Inbox" }]
+      : [{ id: "chart" as const, label: "Chart" }, { id: "trade" as const, label: "Trade" }, { id: "inbox" as const, label: "Inbox" }];
+    const showDesk = !!game && phase !== "start";
+    const barMode = game?.status === "finished" ? "finished" : training ? "training" : practicing ? "practice" : "playing";
+    return (
+      <div className="min-h-screen bg-[#071537] text-white">
+        {showDesk && game && (
+          <>
+            <MobileHeader state={game} badge={levelsDone.training} label={practicing ? "Practice" : training ? "Level 1" : undefined} />
+            <MobileTabs tabs={tabs} value={tab} onChange={setMobileTab} badges={{ inbox: game.messages.length }} />
+            <div className={`relative ${practicing ? "h-[calc(100dvh-330px)]" : "h-[calc(100dvh-200px)]"} min-h-[380px]`}>
+              {tab === "chart" && <MainMonitor state={game} compact />}
+              {tab === "trade" && (
+                <SideMonitor
+                  key={session}
+                  compact
+                  state={game}
+                  error={error}
+                  onTabChange={setTicketTab}
+                  onBuyShares={(n) => apply((g) => buyShares(g, n), "buyShares", true)}
+                  onSellShares={(n) => apply((g) => sellShares(g, n), "sellShares", true)}
+                  onSellOption={(id) => apply((g) => sellOption(g, id), "sellOption", true)}
+                  onPreviewOption={(order) => {
+                    if (practicing) {
+                      const st = PRACTICE_STEPS[stepRef.current];
+                      const wanted = order.type === "call" ? "buyCall" : "buyPut";
+                      if (st.action !== wanted) {
+                        setNudge(st.nudge ?? "Not yet. Follow the step in the card.");
+                        return;
+                      }
+                    }
+                    try {
+                      setModal({ kind: "preview", quote: quoteOption(game, order), order });
+                      setAutoplay(false);
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : String(e));
+                    }
+                  }}
+                />
+              )}
+              {tab === "inbox" && <InboxMonitor messages={game.messages} dateOffset={game.dateOffset} />}
+              {tab === "lesson" && (
+                <LessonCard
+                  key={lesson.id}
+                  compact
+                  lesson={lesson}
+                  index={lessonIdx}
+                  passed={lessonPassed[lessonIdx]}
+                  onPassed={() => setLessonPassed((p) => p.map((v, i) => (i === lessonIdx ? true : v)))}
+                  onNext={() => (lessonIdx >= LESSON_COUNT - 1 ? finishTraining() : setLessonIdx(lessonIdx + 1))}
+                  onBack={() => setLessonIdx(Math.max(0, lessonIdx - 1))}
+                />
+              )}
+              {tab === "list" && (
+                <LessonList
+                  current={lessonIdx}
+                  passed={lessonPassed}
+                  onPick={(i) => {
+                    setLessonIdx(i);
+                    setMobileTab("lesson");
+                  }}
+                />
+              )}
+            </div>
+            <MobileBar
+              mode={barMode}
+              autoplay={autoplay}
+              speed={speed}
+              sound={sound}
+              onNext={step}
+              onSkip={skip}
+              onToggleAutoplay={() => setAutoplay((a) => !a)}
+              onSpeed={setSpeed}
+              onToggleSound={toggleSound}
+              onAskFounder={askFounder}
+              onReview={() => {
+                setPhase("review");
+                phaseRef.current = "review";
+              }}
+              onLevels={showLevels}
+              onSkipToPractice={startPractice}
+            />
+          </>
+        )}
+        {practicing && game && (
+          <MobileCoach
+            step={coachStep}
+            index={stepIdx}
+            text={phoneWording(coachStep.text({ g: game, before }))}
+            nudge={nudge && phoneWording(nudge)}
+            scoreboard={coachStep.id === "scoreboard" ? { you: computeStats(game.history, game.rates), bnh: computeStats(game.bnhHistory, game.rates) } : null}
+            onContinue={coachContinue}
+            onSkip={startReal}
+          />
+        )}
+        {phase === "start" && <StartScreen onStart={(t) => load(t, "levels")} loading={loading} error={loadError} initialTicker={ticker} />}
+        {phase === "levels" && (
+          <LevelSelect
+            ticker={ticker}
+            done={levelsDone}
+            onPick={(l) => {
+              if (l === "training") startTraining();
+              else if (l === "practice") startPractice();
+              else startReal();
+            }}
+          />
+        )}
+        {modals}
+        {helpUi}
+        <AnimatePresence>
+          {toast && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed left-1/2 top-3 z-30 w-[calc(100vw-32px)] -translate-x-1/2 rounded-md border border-white/10 bg-[#0a1a45] px-4 py-2 text-center text-[13px] text-white shadow-lg">
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   if (phase === "review" && game) {
     return (
@@ -477,57 +685,7 @@ export default function Game() {
         />
       )}
 
-      <AnimatePresence>
-        {modal?.kind === "trainingWelcome" && (
-          <Overlay key="tw">
-            <Card className="w-[540px] p-7">
-              <div className="flex items-center gap-3">
-                <FounderAvatar size={44} />
-                <div>
-                  <div className="text-[14px] font-semibold">{FOUNDER_NAME}</div>
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-silver/60">Founder, Gothic Capital</div>
-                </div>
-              </div>
-              <h2 className="mt-5 text-[22px] font-semibold">Welcome to your first day at Gothic Capital.</h2>
-              <p className="mt-2 text-[15px] leading-relaxed text-silver">
-                Before I hand you the fund, we&apos;ll cover the basics: fifteen short lessons on the middle monitor, each with one quick question. Take your time; nobody here was born knowing this.
-              </p>
-              <div className="mt-6 flex justify-end">
-                <Button className="px-5" onClick={() => setModal(null)}>
-                  Let&apos;s start
-                </Button>
-              </div>
-            </Card>
-          </Overlay>
-        )}
-        {modal?.kind === "trainingRecap" && (
-          <TrainingRecap
-            key="recap"
-            onPractice={() => {
-              setModal(null);
-              startPractice();
-            }}
-            onLevels={() => {
-              setModal(null);
-              showLevels();
-            }}
-          />
-        )}
-        {modal?.kind === "bonus" && game && game.bonuses.length > 0 && (
-          <BonusPopup key="bonus" bonus={game.bonuses[game.bonuses.length - 1]} title={game.title} onClose={() => setModal(null)} />
-        )}
-        {modal?.kind === "preview" && (
-          <OptionPreview
-            key="preview"
-            quote={modal.quote}
-            onCancel={() => setModal(null)}
-            onConfirm={() => {
-              apply((g) => buyOption(g, modal.order), modal.order.type === "call" ? "buyCall" : "buyPut", true);
-              setModal(null);
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {modals}
 
       {helpUi}
 

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Line, LineChart, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from "recharts";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from "recharts";
 import type { GameState } from "@/lib/types";
 import { STARTING_CASH } from "@/lib/types";
 import { computeStats, type PerformanceStats } from "@/lib/metrics";
@@ -40,10 +40,13 @@ export default function ReviewScreen({
   state,
   onPlayAgain,
   onNewTicker,
+  compact = false,
 }: {
   state: GameState;
   onPlayAgain: () => void;
   onNewTicker: () => void;
+  /** phone layout: a scrollable column instead of the conference room */
+  compact?: boolean;
 }) {
   const player = useMemo(() => computeStats(state.history, state.rates), [state]);
   const bnh = useMemo(() => computeStats(state.bnhHistory, state.rates), [state]);
@@ -78,6 +81,89 @@ export default function ReviewScreen({
       why: "The yearly return on the money invested: (ending ÷ starting value) ^ (1 ÷ years) − 1.",
     },
   ];
+
+  if (compact) {
+    return (
+      <div className="min-h-screen bg-[#071537] px-4 pb-8 pt-5 text-white">
+        <div className="flex items-start gap-3 pr-12">
+          <FounderAvatar size={40} />
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-silver/60">Performance review · {state.ticker}</div>
+            <h1 className="mt-0.5 text-[18px] font-semibold leading-tight">&ldquo;{closingLine(player, bnh)}&rdquo;</h1>
+            <div className="mt-1 text-[12px] text-silver/70">{FOUNDER_NAME}, Founder</div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-silver/55">Final title</div>
+            <div className="text-[18px] font-semibold">{state.title}</div>
+          </div>
+          <div className="tabular text-right text-[12px] text-silver/70">
+            Bonuses earned
+            <br />
+            {money(totalBonus)}
+          </div>
+        </div>
+        <div className="mt-4 rounded-xl bg-navy-deep/80 p-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-[12px]">
+            <span className="flex items-center gap-1.5">
+              <i className="inline-block h-[3px] w-4 rounded bg-royal-bright" /> You
+              <span className={`tabular ${beat ? "text-gain" : "text-loss"}`}>
+                {money(player.endValue)} ({pct(player.totalReturn)})
+              </span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <i className="inline-block h-[3px] w-4 rounded bg-silver" /> Buy &amp; hold
+              <span className="tabular text-silver">
+                {money(bnh.endValue)} ({pct(bnh.totalReturn)})
+              </span>
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart accessibilityLayer={false} data={rows} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+              <XAxis dataKey="date" ticks={ticks} interval={0} tickFormatter={shortDate} tick={{ fill: "#8b98ab", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} tickLine={false} />
+              <YAxis domain={["auto", "auto"]} width={46} tick={{ fill: "#8b98ab", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} />
+              <Tooltip content={Tip} cursor={{ stroke: "rgba(255,255,255,0.2)" }} />
+              <Line type="monotone" dataKey="bnh" stroke="#c9d1db" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+              <Line type="monotone" dataKey="value" stroke="#1b6fc2" strokeWidth={2.4} dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-4 flex flex-col gap-3">
+          {metrics.map((m) => (
+            <div key={m.label} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-silver/60">{m.label}</span>
+                <span className={`text-[10px] ${m.better ? "text-gain" : "text-loss"}`}>{m.better ? "you win" : "buy & hold wins"}</span>
+              </div>
+              <div className="mt-1 flex items-baseline gap-5">
+                <div>
+                  <div className="tabular text-[22px] font-semibold leading-none">{m.you}</div>
+                  <div className="text-[10px] text-silver/55">you</div>
+                </div>
+                <div>
+                  <div className="tabular text-[17px] font-medium leading-none text-silver">{m.bnh}</div>
+                  <div className="text-[10px] text-silver/55">buy &amp; hold</div>
+                </div>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-snug text-silver/80">{m.why}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-col gap-2">
+          <Button className="w-full py-2.5 text-[15px]" onClick={onPlayAgain}>
+            Play again
+          </Button>
+          <Button variant="ghost" className="w-full py-2.5 text-[15px]" onClick={onNewTicker}>
+            Try a different ticker
+          </Button>
+          <span className="text-center text-[11px] text-silver/60">
+            Started with {money(STARTING_CASH)} · {state.tradeCount} trade{state.tradeCount === 1 ? "" : "s"} over {num(player.years, 1)} years
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

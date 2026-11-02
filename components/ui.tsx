@@ -89,7 +89,7 @@ export function Overlay({ children, onClose }: { children: ReactNode; onClose?: 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="absolute inset-0 z-40 flex items-center justify-center bg-[#0b1a3d]/45 backdrop-blur-[3px]"
+      className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-[#0b1a3d]/45 p-3 backdrop-blur-[3px]"
       onClick={onClose}
     >
       <motion.div
@@ -108,7 +108,7 @@ export function Overlay({ children, onClose }: { children: ReactNode; onClose?: 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-xl border border-white/10 bg-navy-panel/95 text-white shadow-[0_30px_80px_rgba(0,0,0,0.55)] ${className}`}
+      className={`max-w-[calc(100vw-24px)] rounded-xl border border-white/10 bg-navy-panel/95 text-white shadow-[0_30px_80px_rgba(0,0,0,0.55)] ${className}`}
     >
       {children}
     </div>

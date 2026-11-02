@@ -15,9 +15,9 @@ const LEVELS: { id: Level; n: number; title: string; blurb: string; time: string
 
 export default function LevelSelect({ ticker, done, onPick }: { ticker: string; done: LevelsDone; onPick: (l: Level) => void }) {
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/25 backdrop-blur-[3px]">
+    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-white/25 p-3 backdrop-blur-[3px]">
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}>
-        <Card className="w-[900px] p-7">
+        <Card className="w-[900px] p-5 sm:p-7">
           <div className="flex items-center gap-3">
             <FounderAvatar size={44} />
             <div>
@@ -26,12 +26,12 @@ export default function LevelSelect({ ticker, done, onPick }: { ticker: string; 
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-[0.18em] text-silver/60">Ticker · {ticker}</div>
           </div>
-          <h1 className="mt-4 text-[24px] font-semibold">Welcome to your first day. Pick where to start.</h1>
+          <h1 className="mt-4 text-[20px] font-semibold sm:text-[24px]">Welcome to your first day. Pick where to start.</h1>
           <p className="mt-1 text-[14px] text-silver">New to this? Start at Level 1. Already trade? Jump straight to the real game.</p>
 
-          <div className="relative mt-6 grid grid-cols-3 gap-4">
+          <div className="relative mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             {/* path line */}
-            <div className="pointer-events-none absolute left-[16%] right-[16%] top-[26px] h-[3px] rounded bg-white/10" />
+            <div className="pointer-events-none absolute left-[16%] right-[16%] top-[26px] hidden h-[3px] rounded bg-white/10 sm:block" />
             {LEVELS.map((lv) => (
               <div key={lv.id} className="relative flex flex-col items-center">
                 <div
@@ -41,7 +41,7 @@ export default function LevelSelect({ ticker, done, onPick }: { ticker: string; 
                 >
                   {done[lv.id] ? "✓" : lv.n}
                 </div>
-                <div className="mt-3 flex min-h-[150px] w-full flex-col rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+                <div className="mt-2 flex w-full flex-col rounded-xl sm:mt-3 sm:min-h-[150px] border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-silver/60">Level {lv.n}</div>
                   <div className="text-[16px] font-semibold">{lv.title}</div>
                   <p className="mt-1 text-[12px] leading-snug text-silver">{lv.blurb}</p>

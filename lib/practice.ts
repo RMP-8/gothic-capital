@@ -187,3 +187,17 @@ export const PRACTICE_STEPS: PracticeStep[] = [
 ];
 
 export const PRACTICE_TOTAL = PRACTICE_STEPS.length;
+
+/** The desk has three monitors and a keyboard; a phone has tabs and a bottom bar. */
+export function phoneWording(text: string): string {
+  return text
+    .replace(/the middle monitor/gi, "the Chart tab")
+    .replace(/the right monitor/gi, "the Trade tab")
+    .replace(/the card at the top of the screen/gi, "the card above the buttons")
+    .replace(/the left monitor/gi, "the Inbox tab")
+    .replace(/on the keyboard/gi, "at the bottom of the screen")
+    .replace(/It's the blue key on the keyboard\./gi, "It's the blue button at the bottom.")
+    .replace(/The strip along the desk shows/gi, "The numbers at the top show")
+    .replace(/Its right side/gi, "the Positions list below it")
+    .replace(/on its right side/gi, "below it");
+}

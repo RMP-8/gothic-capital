@@ -77,4 +77,6 @@ tests/                    vitest unit tests (npm test)
 data/snapshot/            backup SPY and ^IRX data
 ```
 
+On phones and narrow windows (under 900px wide) the game switches to a stacked layout: a header with the date, cash and portfolio value, tabs for Chart, Trade and Inbox (Lesson and Lessons during Training Day), and a bottom bar with the week controls. The practice coach becomes a sheet above the bar and follows you to the right tab. Same engine, data and scoring as the desktop version.
+
 Tech: Next.js (App Router, TypeScript), Tailwind CSS, Framer Motion, Recharts, yahoo-finance2, Vitest. The office is drawn with SVG and CSS; there are no stock photos, logos, or brand names.

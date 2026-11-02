@@ -11,7 +11,7 @@ export function HelpButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Help"
       title="Help"
-      className="absolute z-[70] flex h-9 w-9 items-center justify-center rounded-full bg-royal text-[17px] font-semibold text-white shadow-[0_4px_14px_rgba(0,83,155,0.45)] transition-transform duration-150 hover:scale-110 hover:bg-royal-bright"
+      className="fixed z-[70] flex h-9 w-9 items-center justify-center rounded-full bg-royal text-[17px] font-semibold text-white shadow-[0_4px_14px_rgba(0,83,155,0.45)] transition-transform duration-150 hover:scale-110 hover:bg-royal-bright"
       style={{ right: 22, top: 18 }}
     >
       ?
@@ -43,7 +43,7 @@ export default function HelpPanel({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="absolute inset-0 z-[65] bg-[#0b1a3d]/30"
+          className="fixed inset-0 z-[65] bg-[#0b1a3d]/30"
           onClick={onClose}
         >
           <motion.aside
@@ -52,7 +52,7 @@ export default function HelpPanel({
             exit={{ x: 40, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-4 right-4 top-4 flex w-[380px] flex-col rounded-xl border border-white/10 bg-navy-panel/95 p-5 text-white shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+            className="absolute bottom-3 right-3 top-3 flex w-[380px] max-w-[calc(100vw-24px)] flex-col rounded-xl border border-white/10 bg-navy-panel/95 p-5 text-white shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-silver/60">Help</span>

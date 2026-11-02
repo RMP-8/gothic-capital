@@ -44,6 +44,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* phones use a scrolling layout instead of the fixed desk */
+@media (max-width: 899px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow: auto;
+    background: #071537;
+  }
+}
+
 /* Thin scrollbars inside monitor panels */
 .monitor-scroll::-webkit-scrollbar {
   width: 6px;

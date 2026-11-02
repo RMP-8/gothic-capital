@@ -7,7 +7,7 @@ import { Button, Card, FounderAvatar, Overlay } from "@/components/ui";
 export default function TrainingRecap({ onPractice, onLevels }: { onPractice: () => void; onLevels: () => void }) {
   return (
     <Overlay>
-      <Card className="w-[860px] p-6">
+      <Card className="w-[860px] p-4 sm:p-6">
         <div className="flex items-center gap-3">
           <FounderAvatar size={44} />
           <div>
@@ -23,14 +23,14 @@ export default function TrainingRecap({ onPractice, onLevels }: { onPractice: ()
         <p className="mt-1 text-[14px] leading-relaxed text-silver">
           Fifteen terms, fifteen right answers. The badge is on your desk and the practice round is unlocked. Here is everything in one place; it&apos;s also in the glossary behind the ? button.
         </p>
-        <div className="monitor-scroll mt-4 grid max-h-[300px] grid-cols-2 gap-x-6 gap-y-1.5 overflow-y-auto pr-1">
+        <div className="monitor-scroll mt-4 grid max-h-[40vh] grid-cols-1 gap-x-6 gap-y-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
           {GLOSSARY.map((g) => (
             <div key={g.term} className="text-[12.5px] leading-snug text-silver">
               <span className="font-semibold text-white">{g.term}.</span> {g.text}
             </div>
           ))}
         </div>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={onLevels}>
             Back to levels
           </Button>

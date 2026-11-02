@@ -17,18 +17,18 @@ export default function StartScreen({
 }) {
   const [ticker, setTicker] = useState(initialTicker);
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/25 backdrop-blur-[3px]">
+    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-white/25 p-3 backdrop-blur-[3px]">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}>
-        <Card className="w-[600px] p-9">
+        <Card className="w-[600px] p-6 sm:p-9">
           <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-silver/60">Manhattan · 54th floor</div>
-          <h1 className="mt-2 text-[40px] font-semibold leading-none tracking-tight">Gothic Capital</h1>
+          <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-tight sm:text-[40px]">Gothic Capital</h1>
           <p className="mt-4 text-[15px] leading-relaxed text-silver">
             You&apos;re the new portfolio manager. The founder hands you <span className="text-white">$100,000</span> and one
             ticker. You&apos;ll trade through the last five years of real weekly prices, one week at a time, and at the end
             she&apos;ll compare you to simply buying and holding.
           </p>
           <form
-            className="mt-6 flex items-end gap-3"
+            className="mt-6 flex flex-wrap items-end gap-3"
             onSubmit={(e) => {
               e.preventDefault();
               if (!loading) onStart(ticker.trim() || "SPY");

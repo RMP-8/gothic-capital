@@ -9,7 +9,7 @@ export default function BonusPopup({ bonus, title, onClose }: { bonus: Bonus; ti
   const up = bonus.yearReturn >= 0;
   return (
     <Overlay onClose={onClose}>
-      <Card className="w-[480px] p-7 text-center">
+      <Card className="w-[480px] p-5 text-center sm:p-7">
         <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-silver/60">Year {bonus.year} review</div>
         <div className="mt-3 flex justify-center">
           <FounderAvatar size={48} />

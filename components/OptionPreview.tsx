@@ -49,7 +49,7 @@ export default function OptionPreview({
   const isCall = quote.type === "call";
   return (
     <Overlay onClose={onCancel}>
-      <Card className="w-[520px] p-6">
+      <Card className="w-[520px] p-4 sm:p-6">
         <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-silver/60">Before you buy</div>
         <h2 className="text-[20px] font-semibold capitalize">
           {quote.contracts} {quote.type} contract{quote.contracts > 1 ? "s" : ""} · ${num(quote.strike)} strike · {quote.expiryWeeks} weeks
@@ -60,7 +60,7 @@ export default function OptionPreview({
             : `The right to sell ${CONTRACT_SIZE * quote.contracts} shares at $${num(quote.strike)} any time in the next ${quote.expiryWeeks} weeks. You profit if the price ends below your break-even.`}
         </p>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
           <Stat label="Cost (premium)" value={money(quote.totalCost)} sub={`${money2(quote.premiumPerShare)} per share`} />
           <Stat label="Break-even" value={`$${num(quote.breakEven)}`} sub={`${isCall ? "above" : "below"} today's $${num(quote.spot)}`} />
           <Stat label="Max loss" value={money(quote.maxLoss)} sub="the premium, never more" tone="loss" />
@@ -70,7 +70,7 @@ export default function OptionPreview({
           <div className="mb-1 px-2 text-[10px] uppercase tracking-[0.18em] text-silver/55">
             Profit or loss at expiry, by {quote.type === "call" ? "stock" : "stock"} price
           </div>
-          <svg width={W} height={H} className="block">
+          <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full">
             <line x1={PAD.l} x2={W - PAD.r} y1={chart.zeroY} y2={chart.zeroY} stroke="rgba(255,255,255,0.25)" strokeDasharray="3 3" />
             <path d={chart.path} fill="none" stroke="#1b6fc2" strokeWidth={2.4} />
             {/* current price */}

@@ -17,11 +17,13 @@ export interface SideMonitorProps {
   onSellOption: (id: string) => void;
   error: string | null;
   onTabChange?: (tab: "shares" | "call" | "put") => void;
+  /** phone layout: ticket above positions */
+  compact?: boolean;
 }
 
 const input = "tabular h-7 rounded border border-ink/20 bg-ink/5 px-1.5 text-[13px] text-ink outline-none focus:border-royal";
 
-export default function SideMonitor({ state, onBuyShares, onSellShares, onPreviewOption, onSellOption, error, onTabChange }: SideMonitorProps) {
+export default function SideMonitor({ state, onBuyShares, onSellShares, onPreviewOption, onSellOption, error, onTabChange, compact = false }: SideMonitorProps) {
   const [tab, setTab] = useState<Tab>("shares");
   const [qty, setQty] = useState("10");
   const [contracts, setContracts] = useState("1");
@@ -44,9 +46,9 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
 
   return (
     <Monitor title="Order ticket" right={<span className="tabular text-[10px] text-ink-2/70">cash {money(state.cash)}</span>}>
-      <div className="flex h-full">
+      <div className={`flex h-full ${compact ? "flex-col overflow-y-auto" : ""}`}>
         {/* ---- ticket ---- */}
-        <div className="flex w-[244px] shrink-0 flex-col px-2.5 pt-2">
+        <div className={`flex shrink-0 flex-col px-2.5 pt-2 ${compact ? "w-full" : "w-[244px]"}`}>
           <Segmented
             value={tab}
             onChange={(t) => {
@@ -136,8 +138,8 @@ export default function SideMonitor({ state, onBuyShares, onSellShares, onPrevie
         </div>
 
         {/* ---- positions ---- */}
-        <div className="my-2 w-px bg-ink/10" />
-        <div data-spot="positions" className="flex min-w-0 flex-1 flex-col">
+        <div className={compact ? "mx-2 my-2 h-px bg-ink/10" : "my-2 w-px bg-ink/10"} />
+        <div data-spot="positions" className={`flex min-w-0 flex-1 flex-col ${compact ? "min-h-[180px]" : ""}`}>
           <div className="px-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-2/60">Positions</div>
           <div className="monitor-scroll min-h-0 flex-1 overflow-y-auto px-2 pb-2">
             {state.shares === 0 && state.options.length === 0 && <p className="mt-1.5 text-[12px] text-ink-2/50">All cash. Nothing on the books yet.</p>}

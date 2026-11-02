@@ -15,7 +15,7 @@ export default function FounderModal({ mode, onClose }: { mode: "tutorial" | "fa
     const last = step === TUTORIAL.length - 1;
     return (
       <Overlay>
-        <Card className="w-[560px] p-7">
+        <Card className="w-[560px] p-5 sm:p-7">
           <div className="flex items-center gap-3">
             <FounderAvatar size={44} />
             <div>
@@ -64,8 +64,8 @@ export default function FounderModal({ mode, onClose }: { mode: "tutorial" | "fa
   const current = FAQ.find((f) => f.id === topic) ?? FAQ[0];
   return (
     <Overlay onClose={onClose}>
-      <Card className="flex w-[760px] overflow-hidden">
-        <div className="monitor-scroll w-[260px] shrink-0 overflow-y-auto border-r border-white/10 bg-white/[0.02] p-3">
+      <Card className="flex w-[760px] flex-col overflow-hidden sm:flex-row">
+        <div className="monitor-scroll max-h-[32vh] w-full shrink-0 overflow-y-auto border-b border-white/10 bg-white/[0.02] p-3 sm:max-h-none sm:w-[260px] sm:border-b-0 sm:border-r">
           <div className="mb-2 px-2 text-[10px] uppercase tracking-[0.18em] text-silver/55">Ask the founder</div>
           {FAQ.map((f) => (
             <button
@@ -80,7 +80,7 @@ export default function FounderModal({ mode, onClose }: { mode: "tutorial" | "fa
             </button>
           ))}
         </div>
-        <div className="flex min-h-[380px] flex-1 flex-col p-6">
+        <div className="flex flex-1 flex-col p-5 sm:min-h-[380px] sm:p-6">
           <div className="flex items-center gap-3">
             <FounderAvatar size={40} />
             <div>
