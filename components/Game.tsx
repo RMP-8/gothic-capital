@@ -92,6 +92,7 @@ export default function Game() {
   const [stepIdx, setStepIdx] = useState(0);
   const [before, setBefore] = useState<GameState | null>(null);
   const [nudge, setNudge] = useState<string | null>(null);
+  const [coachHidden, setCoachHidden] = useState(false);
   const [ticketTab, setTicketTab] = useState<"shares" | "call" | "put">("shares");
   // levels + training day
   const [levelsDone, setLevelsDone] = useState<LevelsDone>(NO_LEVELS);
@@ -141,6 +142,7 @@ export default function Game() {
     setStepIdx(0);
     setBefore(null);
     setNudge(null);
+    setCoachHidden(false);
     setGameAndPhase(newGame(practiceData(full), todayIso()), "practice");
   }, [setGameAndPhase]);
 
@@ -266,6 +268,7 @@ export default function Game() {
       if (practicing && kind && step.action === kind) {
         setBefore(prev);
         setNudge(null);
+        setCoachHidden(false);
         stepRef.current += 1;
         setStepIdx(stepRef.current);
       }
@@ -274,8 +277,26 @@ export default function Game() {
     [refillCoffee, markDone],
   );
 
-  const step = useCallback(() => apply((g) => nextWeek(g), "nextWeek"), [apply]);
-  const skip = useCallback(() => apply((g) => skipWeeks(g, 4), "skip"), [apply]);
+  /** In the real game the clock stays stopped until the first trade; holding for five years isn't the assignment. */
+  const clockLocked = useCallback(() => {
+    const g = gameRef.current;
+    if (phaseRef.current === "playing" && g && g.tradeCount === 0) {
+      setToast("Eleanor: make at least one trade before the week moves. Nobody learns this job by watching.");
+      setAutoplay(false);
+      return true;
+    }
+    return false;
+  }, []);
+  const step = useCallback(() => {
+    if (!clockLocked()) apply((g) => nextWeek(g), "nextWeek");
+  }, [apply, clockLocked]);
+  const skip = useCallback(() => {
+    if (!clockLocked()) apply((g) => skipWeeks(g, 4), "skip");
+  }, [apply, clockLocked]);
+  const toggleAutoplay = () => {
+    if (clockLocked()) return;
+    setAutoplay((a) => !a);
+  };
 
   const coachContinue = () => {
     const s = PRACTICE_STEPS[stepRef.current];
@@ -286,6 +307,7 @@ export default function Game() {
     }
     setBefore(gameRef.current);
     setNudge(null);
+    setCoachHidden(false);
     stepRef.current += 1;
     setStepIdx(stepRef.current);
   };
@@ -450,7 +472,7 @@ export default function Game() {
           <>
             <MobileHeader state={game} name={playerName} awards={awards} label={practicing ? "Practice" : training ? "Level 1" : undefined} />
             <MobileTabs tabs={tabs} value={tab} onChange={setMobileTab} badges={{ inbox: game.messages.length }} />
-            <div className={`relative ${practicing ? "h-[calc(100dvh-330px)]" : "h-[calc(100dvh-200px)]"} min-h-[380px]`}>
+            <div className={`relative ${practicing && !coachHidden ? "h-[calc(100dvh-330px)]" : "h-[calc(100dvh-200px)]"} min-h-[380px]`}>
               {tab === "chart" && <MainMonitor state={game} compact />}
               {tab === "trade" && (
                 <SideMonitor
@@ -511,7 +533,7 @@ export default function Game() {
               sound={sound}
               onNext={step}
               onSkip={skip}
-              onToggleAutoplay={() => setAutoplay((a) => !a)}
+              onToggleAutoplay={toggleAutoplay}
               onSpeed={setSpeed}
               onToggleSound={toggleSound}
               onAskFounder={askFounder}
@@ -524,7 +546,7 @@ export default function Game() {
             />
           </>
         )}
-        {practicing && game && (
+        {practicing && game && !coachHidden && (
           <MobileCoach
             step={coachStep}
             index={stepIdx}
@@ -533,7 +555,17 @@ export default function Game() {
             scoreboard={coachStep.id === "scoreboard" ? { you: computeStats(game.history, game.rates), bnh: computeStats(game.bnhHistory, game.rates) } : null}
             onContinue={coachContinue}
             onSkip={startReal}
+            onClose={() => setCoachHidden(true)}
           />
+        )}
+        {practicing && game && coachHidden && (
+          <button
+            type="button"
+            onClick={() => setCoachHidden(false)}
+            className="fixed bottom-[78px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-royal bg-navy-panel/95 px-3 py-1.5 text-[12px] text-white shadow-lg"
+          >
+            <FounderAvatar size={20} /> Show Eleanor&apos;s tip
+          </button>
         )}
         {phase === "start" && <StartScreen onStart={(t, n) => load(t, "levels", n)} loading={loading} error={loadError} initialTicker={ticker} initialName={playerName} />}
         {phase === "levels" && (
@@ -664,7 +696,7 @@ export default function Game() {
             sound={sound}
             onNext={step}
             onSkip={skip}
-            onToggleAutoplay={() => setAutoplay((a) => !a)}
+            onToggleAutoplay={toggleAutoplay}
             onSpeed={setSpeed}
             onToggleSound={toggleSound}
             onAskFounder={askFounder}
@@ -677,19 +709,27 @@ export default function Game() {
         </>
       )}
 
-      {practicing && (
-        <>
-          <PracticeCoach
-            spot={coachSpot}
-            step={coachStep}
-            index={stepIdx}
-            text={coachStep.text({ g: game, before })}
-            nudge={nudge}
-            scoreboard={coachStep.id === "scoreboard" ? { you: computeStats(game.history, game.rates), bnh: computeStats(game.bnhHistory, game.rates) } : null}
-            onContinue={coachContinue}
-            onSkip={startReal}
-          />
-        </>
+      {practicing && !coachHidden && (
+        <PracticeCoach
+          spot={coachSpot}
+          step={coachStep}
+          index={stepIdx}
+          text={coachStep.text({ g: game, before })}
+          nudge={nudge}
+          scoreboard={coachStep.id === "scoreboard" ? { you: computeStats(game.history, game.rates), bnh: computeStats(game.bnhHistory, game.rates) } : null}
+          onContinue={coachContinue}
+          onSkip={startReal}
+          onClose={() => setCoachHidden(true)}
+        />
+      )}
+      {practicing && coachHidden && (
+        <button
+          type="button"
+          onClick={() => setCoachHidden(false)}
+          className="absolute left-1/2 top-5 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-royal bg-navy-panel/95 px-3 py-1.5 text-[12px] text-white shadow-lg hover:bg-navy-panel"
+        >
+          <FounderAvatar size={20} /> Show Eleanor&apos;s tip · step {stepIdx + 1} of {PRACTICE_STEPS.length}
+        </button>
       )}
 
       {phase === "start" && <StartScreen onStart={(t, n) => load(t, "levels", n)} loading={loading} error={loadError} initialTicker={ticker} initialName={playerName} />}

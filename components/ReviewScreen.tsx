@@ -12,8 +12,9 @@ import { shownDate } from "@/lib/engine";
 import ConferenceRoom from "@/components/office/ConferenceRoom";
 import { Button, FounderAvatar } from "@/components/ui";
 
-export function closingLine(player: PerformanceStats, bnh: PerformanceStats): string {
+export function closingLine(player: PerformanceStats, bnh: PerformanceStats, trades = 1): string {
   const beat = player.endValue > bnh.endValue;
+  if (trades === 0) return "You never put a dollar to work. Sitting in cash is a decision, but it isn't portfolio management. Next time, take a position.";
   if (beat && player.sharpe >= bnh.sharpe) return "You beat the market with less risk. Your office just got a bigger window.";
   if (beat) return "You beat buy-and-hold, with a little more drama along the way. Not bad for five years.";
   if (player.maxDrawdown < bnh.maxDrawdown) return "Buy-and-hold edged you out, but you slept better than the market did. There's a career in that.";
@@ -89,7 +90,7 @@ export default function ReviewScreen({
           <FounderAvatar size={40} />
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-silver/60">Performance review · {state.ticker}</div>
-            <h1 className="mt-0.5 text-[18px] font-semibold leading-tight">&ldquo;{closingLine(player, bnh)}&rdquo;</h1>
+            <h1 className="mt-0.5 text-[18px] font-semibold leading-tight">&ldquo;{closingLine(player, bnh, state.tradeCount)}&rdquo;</h1>
             <div className="mt-1 text-[12px] text-silver/70">{FOUNDER_NAME}, Founder</div>
           </div>
         </div>
@@ -173,13 +174,13 @@ export default function ReviewScreen({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
         className="absolute rounded-2xl border border-white/10 bg-[#071537]/92 p-6 text-white shadow-[0_40px_120px_rgba(0,0,0,0.6)] backdrop-blur-sm"
-        style={{ left: 190, top: 60, width: 1220, height: 600 }}
+        style={{ left: 40, top: 60, width: 1100, height: 600 }}
       >
         <div className="flex items-start gap-4">
           <FounderAvatar size={48} />
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-silver/60">Performance review · {state.ticker}</div>
-            <h1 className="mt-0.5 text-[24px] font-semibold leading-tight">&ldquo;{closingLine(player, bnh)}&rdquo;</h1>
+            <h1 className="mt-0.5 text-[24px] font-semibold leading-tight">&ldquo;{closingLine(player, bnh, state.tradeCount)}&rdquo;</h1>
             <div className="mt-1 text-[12px] text-silver/70">{FOUNDER_NAME}, Founder</div>
           </div>
           <div className="ml-auto text-right">
@@ -189,8 +190,10 @@ export default function ReviewScreen({
           </div>
         </div>
 
+        {/* speech tail toward Eleanor */}
+        <div className="absolute -right-[22px] top-[110px] h-0 w-0 border-y-[16px] border-l-[24px] border-y-transparent border-l-[#071537]/92" />
         <div className="mt-4 flex gap-5">
-          <div className="w-[640px] rounded-xl bg-navy-deep/80 p-3">
+          <div className="w-[560px] rounded-xl bg-navy-deep/80 p-3">
             <div className="flex items-center gap-4 px-1 text-[12px]">
               <span className="flex items-center gap-1.5">
                 <i className="inline-block h-[3px] w-4 rounded bg-royal-bright" /> You
@@ -208,7 +211,7 @@ export default function ReviewScreen({
                 {longDate(rows[0].date)} → {longDate(rows[rows.length - 1].date)}
               </span>
             </div>
-            <LineChart accessibilityLayer={false} width={616} height={300} data={rows} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <LineChart accessibilityLayer={false} width={536} height={300} data={rows} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
               <XAxis
                 dataKey="date"
                 ticks={ticks}

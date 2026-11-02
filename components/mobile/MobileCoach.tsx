@@ -17,6 +17,7 @@ export default function MobileCoach({
   scoreboard,
   onContinue,
   onSkip,
+  onClose,
 }: {
   step: PracticeStep;
   index: number;
@@ -25,6 +26,7 @@ export default function MobileCoach({
   scoreboard?: { you: PerformanceStats; bnh: PerformanceStats } | null;
   onContinue: () => void;
   onSkip: () => void;
+  onClose: () => void;
 }) {
   const waiting = !!step.action;
   return (
@@ -38,8 +40,13 @@ export default function MobileCoach({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
             <span className="text-[11.5px] font-semibold">{FOUNDER_NAME}</span>
-            <span className="text-[9.5px] uppercase tracking-[0.18em] text-silver/60">
-              Step {index + 1} of {PRACTICE_TOTAL}
+            <span className="flex items-center gap-1.5">
+              <span className="text-[9.5px] uppercase tracking-[0.18em] text-silver/60">
+                Step {index + 1} of {PRACTICE_TOTAL}
+              </span>
+              <button type="button" onClick={onClose} aria-label="Hide this tip" className="flex h-6 w-6 items-center justify-center rounded-md text-silver/70 hover:bg-white/10">
+                ✕
+              </button>
             </span>
           </div>
           <motion.p key={step.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-0.5 text-[13px] leading-snug text-silver">

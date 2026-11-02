@@ -1,6 +1,7 @@
 "use client";
 
 import { MOODS, Skyline } from "./OfficeScene";
+import Eleanor from "./Eleanor";
 
 /** Glass conference room for the performance review, late-afternoon light, straight-on like the office. */
 export function ConferenceRoom() {
@@ -54,15 +55,17 @@ export function ConferenceRoom() {
       <rect x="0" y="716" width="1600" height="6" fill="#2a1f17" fillOpacity="0.5" />
 
       {/* chairs along the far side, peeking above the table */}
-      {[300, 800, 1300].map((cx) => (
+      {[300, 800].map((cx) => (
         <g key={cx}>
           <rect x={cx - 70} y="612" width="140" height="110" rx="18" fill="#2f3640" />
           <rect x={cx - 60} y="622" width="120" height="90" rx="14" fill="#3b434e" />
         </g>
       ))}
 
-      {/* carafe and two glasses, right side of the table */}
-      <g>
+      <Eleanor x={1330} />
+
+      {/* carafe and two glasses, at the near end of the table */}
+      <g transform="translate(-1240 0)">
         <ellipse cx="1390" cy="780" rx="60" ry="8" fill="#000000" fillOpacity="0.25" filter="url(#cr-soft)" />
         <path d="M1356 720 L1384 720 L1388 700 L1352 700 Z" fill="url(#cr-glassware)" />
         <path d="M1346 720 L1394 720 L1402 778 L1338 778 Z" fill="url(#cr-glassware)" />

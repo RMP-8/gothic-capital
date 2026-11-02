@@ -22,6 +22,8 @@ export interface CoachProps {
   scoreboard?: { you: PerformanceStats; bnh: PerformanceStats } | null;
   onContinue: () => void;
   onSkip: () => void;
+  /** collapse the box (the step keeps going) */
+  onClose: () => void;
 }
 
 const BOX_W = 560;
@@ -37,7 +39,7 @@ function stageRectOf(el: Element): Rect | null {
   return { x: (r.left - s.left) / scale, y: (r.top - s.top) / scale, w: r.width / scale, h: r.height / scale };
 }
 
-export default function PracticeCoach({ spot, step, index, text, nudge, scoreboard, onContinue, onSkip }: CoachProps) {
+export default function PracticeCoach({ spot, step, index, text, nudge, scoreboard, onContinue, onSkip, onClose }: CoachProps) {
   const [arrowEl, setArrowEl] = useState<SVGSVGElement | null>(null);
   const [target, setTarget] = useState<Rect | null>(null);
   const [boxH, setBoxH] = useState(160);
@@ -123,8 +125,13 @@ export default function PracticeCoach({ spot, step, index, text, nudge, scoreboa
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
               <span className="text-[12px] font-semibold">{FOUNDER_NAME}</span>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-silver/60">
-                Step {index + 1} of {PRACTICE_TOTAL}
+              <span className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-silver/60">
+                  Step {index + 1} of {PRACTICE_TOTAL}
+                </span>
+                <button type="button" onClick={onClose} aria-label="Hide this tip" title="Hide this tip" className="flex h-6 w-6 items-center justify-center rounded-md text-silver/70 hover:bg-white/10 hover:text-white">
+                  ✕
+                </button>
               </span>
             </div>
             <motion.p
