@@ -56,6 +56,21 @@ function Sized({ compact, children }: { compact: boolean; children: React.ReactE
   );
 }
 
+/** Y-axis range with a little headroom; a flat series (week 1) gets a real span so the axis never repeats a tick. */
+function padDomain(vals: number[]): [number, number] {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const v of vals) {
+    if (!Number.isFinite(v)) continue;
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  if (!Number.isFinite(lo)) return [0, 1];
+  const span = hi - lo;
+  const pad = span > 0 ? span * 0.08 : Math.abs(hi) * 0.02 || 1;
+  return [lo - pad, hi + pad];
+}
+
 export default function MainMonitor({ state, compact = false }: { state: GameState; compact?: boolean }) {
   const rows = useMemo<Row[]>(
     () =>
@@ -71,6 +86,8 @@ export default function MainMonitor({ state, compact = false }: { state: GameSta
   const prevPrice = state.week > 0 ? state.data.prices[state.week - 1].close : price;
   const priceChange = prevPrice > 0 ? price / prevPrice - 1 : 0;
   const lead = state.history[state.week] - state.bnhHistory[state.week];
+  const priceDomain = useMemo(() => padDomain(rows.map((r) => r.price)), [rows]);
+  const valueDomain = useMemo(() => padDomain(rows.flatMap((r) => [r.value, r.bnh])), [rows]);
   const xTicks = useMemo(() => {
     const n = rows.length;
     if (n < 2) return rows.map((r) => r.date);
@@ -107,7 +124,7 @@ export default function MainMonitor({ state, compact = false }: { state: GameSta
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" ticks={xTicks} tickFormatter={shortDate} tick={axisTick} axisLine={{ stroke: "rgba(11,30,77,0.12)" }} tickLine={false} interval={0} />
-              <YAxis domain={["auto", "auto"]} width={38} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${Math.round(v)}`} />
+              <YAxis domain={priceDomain} width={38} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${Math.round(v)}`} />
               <Tooltip content={PriceTip} cursor={{ stroke: "rgba(11,30,77,0.25)" }} />
               <Area type="monotone" dataKey="price" stroke="#00539b" strokeWidth={1.8} fill="url(#mm-price)" isAnimationActive={false} dot={false} />
             </AreaChart>
@@ -135,7 +152,7 @@ export default function MainMonitor({ state, compact = false }: { state: GameSta
           <Sized compact={compact}>
             <LineChart accessibilityLayer={false} {...dims} data={rows} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <XAxis dataKey="date" ticks={xTicks} tickFormatter={shortDate} tick={axisTick} axisLine={{ stroke: "rgba(11,30,77,0.12)" }} tickLine={false} interval={0} />
-              <YAxis domain={["auto", "auto"]} width={38} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} />
+              <YAxis domain={valueDomain} width={38} tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} />
               <Tooltip content={ValueTip} cursor={{ stroke: "rgba(11,30,77,0.25)" }} />
               <Line type="monotone" dataKey="bnh" stroke="#8b98ab" strokeWidth={1.5} dot={false} isAnimationActive={false} />
               <Line type="monotone" dataKey="value" stroke="#00539b" strokeWidth={2.2} dot={false} isAnimationActive={false} />

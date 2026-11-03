@@ -1,6 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+
+const NAME_KEY = "gothic-capital-name";
+const noSubscribe = () => () => {};
+/** The name saved on an earlier visit, read after hydration so the server and client render the same first frame. */
+function useSavedName(): string {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => {
+      try {
+        return window.localStorage.getItem(NAME_KEY) ?? "";
+      } catch {
+        return "";
+      }
+    },
+    () => "",
+  );
+}
 import { motion } from "framer-motion";
 import { Button, Card } from "@/components/ui";
 
@@ -19,6 +36,7 @@ export default function StartScreen({
 }) {
   const [ticker, setTicker] = useState(initialTicker);
   const [name, setName] = useState(initialName);
+  const savedName = useSavedName();
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-white/25 p-3 backdrop-blur-[3px]">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}>
@@ -43,7 +61,8 @@ export default function StartScreen({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={24}
-                placeholder="for the nameplate"
+                placeholder={savedName || "for the nameplate"}
+                title={savedName ? `Leave blank to keep ${savedName}` : undefined}
                 autoComplete="given-name"
                 className="h-11 w-48 rounded-md border border-white/15 bg-white/5 px-3 text-[16px] font-medium text-white outline-none placeholder:text-silver/40 focus:border-royal-bright"
                 disabled={loading}

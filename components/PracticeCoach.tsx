@@ -149,7 +149,6 @@ export default function PracticeCoach({ spot, step, index, text, nudge, scoreboa
                   key={nudge}
                   initial={{ opacity: 0, x: -6 }}
                   animate={{ opacity: 1, x: [0, -4, 4, -3, 3, 0] }}
-                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.4 }}
                   className="mt-1.5 rounded-md border border-loss/40 bg-loss/10 px-2 py-1 text-[12.5px] text-loss"
                 >

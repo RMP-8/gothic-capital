@@ -91,7 +91,6 @@ export default function Game() {
   // practice round
   const [stepIdx, setStepIdx] = useState(0);
   const [before, setBefore] = useState<GameState | null>(null);
-  const [nudge, setNudge] = useState<string | null>(null);
   const [coachHidden, setCoachHidden] = useState(false);
   const [ticketTab, setTicketTab] = useState<"shares" | "call" | "put">("shares");
   // levels + training day
@@ -107,6 +106,10 @@ export default function Game() {
   const fullData = useRef<MarketData | null>(null);
   const phaseRef = useRef<Phase>("start");
   const stepRef = useRef(0);
+  // A nudge is tied to the step it was raised on, so it can never outlive that step.
+  const [nudgeAt, setNudgeAt] = useState<{ step: number; text: string } | null>(null);
+  const nudge = nudgeAt && nudgeAt.step === stepIdx ? nudgeAt.text : null;
+  const setNudge = useCallback((text: string | null) => setNudgeAt(text ? { step: stepRef.current, text } : null), []);
   const soundRef = useRef(false);
   const coffeeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -144,7 +147,7 @@ export default function Game() {
     setNudge(null);
     setCoachHidden(false);
     setGameAndPhase(newGame(practiceData(full), todayIso()), "practice");
-  }, [setGameAndPhase]);
+  }, [setGameAndPhase, setNudge]);
 
   const startReal = useCallback(() => {
     const full = fullData.current;
@@ -274,7 +277,7 @@ export default function Game() {
       }
       return true;
     },
-    [refillCoffee, markDone],
+    [refillCoffee, markDone, setNudge],
   );
 
   /** In the real game the clock stays stopped until the first trade; holding for five years isn't the assignment. */
@@ -546,7 +549,7 @@ export default function Game() {
             />
           </>
         )}
-        {practicing && game && !coachHidden && (
+        {practicing && game && !coachHidden && !modal && (
           <MobileCoach
             step={coachStep}
             index={stepIdx}
@@ -709,7 +712,12 @@ export default function Game() {
         </>
       )}
 
-      {practicing && !coachHidden && (
+      {practicing && modal && (
+        <div className="absolute left-5 top-5 z-[60] rounded-full border border-white/40 bg-royal px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-md">
+          Practice
+        </div>
+      )}
+      {practicing && !coachHidden && !modal && (
         <PracticeCoach
           spot={coachSpot}
           step={coachStep}
